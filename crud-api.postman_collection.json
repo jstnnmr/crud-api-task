@@ -1,0 +1,320 @@
+{
+  "info": {
+    "_postman_id": "a550845c-c469-4758-9804-701fe1aeded7",
+    "name": "crud-api",
+    "description": "## Overview\n\nThis collection contains basic CRUD-style requests for a simple **Tasks & Users** REST API.\n\nRequests are organized into two folders:\n- **TASKS** — endpoints under `/tasks`\n- **USERS** — endpoints under `/users`\n\n## Base URL (recommended: variable-driven)\n\nCurrent base URL used across requests:\n\n```text\nhttp://crud-api-task.test/api\n```\n\nRecommended setup (so you can switch hosts/environments easily):\n- Create an environment or collection variable named `baseUrl`\n- Update request URLs to use:\n\n```text\n{{baseUrl}}\n```\n\n> Active environment in this workspace: **FS** (you can add `baseUrl` there).\n\n---\n\n## TASKS folder\n\n### Create task\n- **Request:** [add tasks](request/53229088-05cdf5e0-fea9-4c3d-9aa3-a74be9ac730e)\n- **Method/Path:** `POST /tasks`\n\n### List tasks\n- **Request:** [display all tasks](request/53229088-1127d452-a8a8-47ec-88e5-c229eacf7848)\n- **Method/Path:** `GET /tasks`\n\n### Update task\n- **Request:** [update tasks](request/53229088-9b65818c-fd81-447f-8904-6e68fae73de4)\n- **Method/Path:** `PUT /tasks/:id`\n- **Note:** This request currently uses a placeholder path segment: `/tasks/id_number`. Replace `id_number` with a real task id (or parameterize it as `{{taskId}}`).\n\n### Filter tasks (query example)\n- **Request:** [filter task by status](request/53229088-50006bbf-3be5-410e-8c1d-fa11c6cda312)\n- **Method/Path:** `GET /tasks?status=pending`\n- **Example:** `status=pending`\n\n### Sort tasks (query example)\n- **Request:** [sort task by due_date](request/53229088-02586792-4328-451f-a621-e99c96f3fa42)\n- **Method/Path:** `GET /tasks?sort=due_date`\n- **Example:** `sort=due_date`\n\n### Pagination (query example)\n- **Request:** [task pagination](request/53229088-eeac29bf-5ad9-49fd-94ee-53714e4699b8)\n- **Method/Path:** `GET /tasks?page=1`\n- **Example:** `page=1`\n\n---\n\n## USERS folder\n\n### Create user (misaligned request)\n- **Request:** [add user](request/53229088-274523a1-d77f-4f25-97d1-2dd895c8f7ab)\n- **Intended Method/Path:** `POST /users`\n- **Current behavior:** This request is named **add user** but currently points to `POST /tasks?due_date=in_progress`.\n  - The query parameter `due_date=in_progress` also appears inconsistent (a date field vs a status-like value).\n\n### List users\n- **Request:** [display all users](request/53229088-23469b6f-bc9c-4e30-9494-2b9e8d16f8c6)\n- **Method/Path:** `GET /users`\n\n### Update user\n- **Request:** [update user](request/53229088-febbf470-d602-4601-a678-d3c7e460fef8)\n- **Method/Path:** `PUT /users/:id`\n- **Note:** This request currently hardcodes an id: `/users/14`. Replace with a real id (or parameterize as `{{userId}}`).\n\n### Delete user (two variants)\nThere are **two separate DELETE requests** named **remove user**:\n- [remove user](request/53229088-aaa98c00-7fcd-4e16-9dff-63a3023a564e) — `DELETE /users/[id_number]` (placeholder syntax)\n- [remove user](request/53229088-21358b3d-7cae-42f2-8595-e21628173efb) — `DELETE /users/:id`\n\n---\n\n## Other / cleanup notes\n\n- There is a top-level request named [New Request](request/53229088-148617bd-ac44-480e-b291-73966eefc6e8) with **no URL set**.\n\n> This collection description documents what currently exists in the collection. It does not modify any request configuration.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53229088",
+    "_collection_link": "https://go.postman.co/collection/53229088-a550845c-c469-4758-9804-701fe1aeded7?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "USERS",
+      "item": [
+        {
+          "name": "add user",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Cache-Control",
+                "value": "no-cache",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Taylor Swift\",\r\n    \"email\": \"sample@gmail.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://crud-api-task.test/api/tasks?due_date=in_progress",
+              "protocol": "http",
+              "host": [
+                "crud-api-task",
+                "test"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "due_date",
+                  "value": "in_progress"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "display all users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://crud-api-task.test/api/users",
+              "protocol": "http",
+              "host": [
+                "crud-api-task",
+                "test"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update user",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Taylor Shift\",\r\n    \"email\": \"sample1@gmail.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://crud-api-task.test/api/users/14",
+              "protocol": "http",
+              "host": [
+                "crud-api-task",
+                "test"
+              ],
+              "path": [
+                "api",
+                "users",
+                "14"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "remove user",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://crud-api-task.test/api/users/[id_number]",
+              "protocol": "http",
+              "host": [
+                "crud-api-task",
+                "test"
+              ],
+              "path": [
+                "api",
+                "users",
+                "[id_number]"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "This folder contains the **User management** endpoints for the CRUD API.\n\n## Endpoints\n\n- **Add user** (`POST`) — Create a new user.\n    \n- **Display all users** (`GET`) — Retrieve the full list of users.\n    \n- **Update user** (`PUT /api/users/:id`) — Update an existing user by ID.\n    \n- **Remove user** (`DELETE /api/users/:id`) — Delete an existing user by ID.\n    \n\n## Notes\n\n- Replace `:id` with a valid user ID (e.g., `14`).\n    \n- If you’re running locally, ensure the base host (`http://crud-api-task.test`) is reachable."
+    },
+    {
+      "name": "TASKS",
+      "item": [
+        {
+          "name": "add tasks",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Cache-Control",
+                "value": "no-cache",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"user_id\": 1,\r\n    \"title\": \"CRUD api task\",\r\n    \"description\": \"Create a simple REST API using Laravel for managing Users and Tasks\",\r\n    \"status\": \"pending\",\r\n    \"due_date\": \"\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://crud-api-task.test/api/tasks",
+              "protocol": "http",
+              "host": [
+                "crud-api-task",
+                "test"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update tasks",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"user_id\": 1,\r\n    \"title\": \"CRUD api task\",\r\n    \"description\": \"Create a simple REST API using Laravel for managing Users and Tasks\",\r\n    \"status\": \"\",\r\n    \"due_date\": \"pending\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://crud-api-task.test/api/tasks/id_number",
+              "protocol": "http",
+              "host": [
+                "crud-api-task",
+                "test"
+              ],
+              "path": [
+                "api",
+                "tasks",
+                "id_number"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://crud-api-task.test/api/tasks?status=completed&user_id=1",
+              "protocol": "http",
+              "host": [
+                "crud-api-task",
+                "test"
+              ],
+              "path": [
+                "api",
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "in_progress",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "completed"
+                },
+                {
+                  "key": "user_id",
+                  "value": "1"
+                },
+                {
+                  "key": "sort",
+                  "value": "due_date",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "remove user",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Taylor Shift\",\r\n    \"email\": \"sample1@gmail.com\"\r\n}"
+            },
+            "url": {
+              "raw": "http://crud-api-task.test/api/users/:id",
+              "protocol": "http",
+              "host": [
+                "crud-api-task",
+                "test"
+              ],
+              "path": [
+                "api",
+                "users",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
