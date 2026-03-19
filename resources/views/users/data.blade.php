@@ -28,16 +28,18 @@
       <td>{{ $user->name }}</td>
       <td>{{ $user->email }}</td>
       <td>
-        @foreach ($user->tasks as $task)
-          <div>{{ $task->title }}</div>
-        @endforeach
-      </td>
+      @forelse ($user->tasks as $task)
+        <div>{{ $task->title }}</div>
+      @empty
+        <div>No tasks found.</div>
+      @endforelse
+    </td>
     </tr>
     @empty
     <tr>
-      <td colspan="4">No users found.</td>
+      <td colspan="4">No data found.</td>
     </tr>
-    @endforelse  {{-- ← this was missing --}}
+    @endforelse 
   </tbody>
 </table>
 </body>
