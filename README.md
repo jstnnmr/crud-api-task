@@ -19,7 +19,7 @@
 - **Step 1:** Clone the repository:
     Open Github Desktop, clone the repository by pasting the URL.
 - **Step 2:** Set up database:
-    In HeidiSQL, add a new database named 'crud-api'.
+    Using MySQL, create a database named 'crud-api'.
     Run `php artisan migrate` in VSC terminal
 - **Step 3:** Install Composer:
     `composer install`

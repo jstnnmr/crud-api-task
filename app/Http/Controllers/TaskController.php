@@ -16,7 +16,7 @@ class TaskController extends Controller
                 ->when($request->has('status'), function ($query) use ($request) {
                     $query->where('status', $request->status);
                 })
-                ->when($request->sort === 'due_date', function ($query) {
+                ->when($request->has('sort') && $request->sort === 'due_date', function ($query) {
                     $query->orderBy('due_date');
                 })
                 ->get();
@@ -96,7 +96,13 @@ class TaskController extends Controller
             ], 404);
         }
 
-        $task->update($request->all());
+        $request->validate([
+        'user_id'     => 'required|exists:users,id',
+        'title'       => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'status'      => 'required|in:pending,in_progress,completed',
+        'due_date'    => 'nullable|date',
+    ]);
 
         return response()->json([
             'message' => 'Task updated successfully',
