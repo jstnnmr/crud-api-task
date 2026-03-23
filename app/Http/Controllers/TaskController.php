@@ -3,129 +3,127 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Task;
+use App\Services\TaskService;
+use OpenApi\Attributes as OA;
 
 class TaskController extends Controller
 {
-    public function index (Request $request)
+    protected $taskService;
+
+    public function __construct(TaskService $taskService)
     {
+        $this->taskService = $taskService;
+    }
 
-    $tasks = Task::when($request->has('user_id'), function ($query) use ($request) {
-                    $query->where('user_id', $request->user_id);
-                })
-                ->when($request->has('status'), function ($query) use ($request) {
-                    $query->where('status', $request->status);
-                })
-                ->when($request->has('sort') && $request->sort === 'due_date', function ($query) {
-                    $query->orderBy('due_date');
-                })
-                ->get();
-
-        // $tasks = Task::where('user_id', $request->user_id)
-        //     ->when($request->has('status'), function ($query) use ($request) {
-        //         $query->where('status', $request->status);
-        //     })
-        //     ->when($request->has('sort') && $request->sort === 'due_date', function ($query) {
-        //         $query->orderBy('due_date');
-        //     })
-        //     ->get();
-
-
-        // //filter response
-        // if ($request->has('status')) {
-        //     $tasks->where('status', $request->status);
-        // }
-
-        // if ($request->has('user_id')) {
-        //     $tasks->where('user_id', $request->user_id);
-        // }
-
-        // if ($request->has('sort') && $request->sort === 'due_date') {
-        //     $tasks->orderBy('due_date');
-        // }
-        
-        //return response as JSON
-        //dd($request->expectsJson(),$request->headers);
-            if ($request->expectsJson()) {
-            return response()->json($tasks, 200);
+    #[OA\Get(path: '/api/tasks', summary: 'Get all tasks', tags: ['Tasks'],
+        responses: [new OA\Response(response: 200, description: 'Success')]
+    )]
+    public function index()
+    {
+        $tasks = $this->taskService->getAllTasks();
+        if (request()->is('api/*') || request()->wantsJson()) {
+            return response()->json($tasks);
         }
-
-        // Otherwise, return the standard HTML view
-        return view('tasks.data', compact('tasks'));
+        return redirect()->route('users.index');
     }
 
-    // POST /api/tasks - Create a task
-    public function store(Request $request)
-    {
-        $task = Task::create([
-            'user_id'     => $request->user_id,
-            'title'       => $request->title,
-            'description' => $request->description,
-            'status'      => $request->status,
-            'due_date'    => $request->due_date,
-        ]);
-
-            return response()->json([
-                'message' => 'Task created successfully',
-                'data'    => $task
-            ], 201);
-    }
-
-    // GET /api/tasks/{id} - View a single task
+    #[OA\Get(path: '/api/tasks/{id}', summary: 'Get task by ID', tags: ['Tasks'],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [
+            new OA\Response(response: 200, description: 'Success'),
+            new OA\Response(response: 404, description: 'Task not found')
+        ]
+    )]
     public function show($id)
     {
-        $task = Task::find($id);
-
-        if (!$task) {
-            return response()->json([
-                'message' => 'Task not found'
-            ], 404);
+        $task = $this->taskService->getTaskById($id);
+        if (request()->is('api/*') || request()->wantsJson()) {
+            return response()->json($task);
         }
-
-        return response()->json($task, 200);
+        return redirect()->route('users.index');
     }
 
-    // PUT /api/tasks/{id} - Update a task
+    #[OA\Post(path: '/api/tasks', summary: 'Create a task', tags: ['Tasks'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['user_id', 'title', 'status'],
+                properties: [
+                    new OA\Property(property: 'user_id', type: 'integer', example: 1),
+                    new OA\Property(property: 'title', type: 'string', example: 'My Task'),
+                    new OA\Property(property: 'description', type: 'string', example: 'Task description'),
+                    new OA\Property(property: 'status', type: 'string', enum: ['pending', 'in_progress', 'completed'], example: 'pending'),
+                    new OA\Property(property: 'due_date', type: 'string', format: 'date', example: '2026-12-31'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Task created successfully'),
+            new OA\Response(response: 422, description: 'Validation error')
+        ]
+    )]
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id'     => 'required|exists:users,id',
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status'      => 'required|in:pending,in_progress,completed',
+            'due_date'    => 'nullable|date',
+        ]);
+        $task = $this->taskService->createTask($validated);
+        if (request()->is('api/*') || request()->wantsJson()) {
+            return response()->json(['message' => 'Task created successfully', 'data' => $task], 201);
+        }
+        return redirect()->route('users.index')->with('success', 'Task created successfully');
+    }
+
+    #[OA\Put(path: '/api/tasks/{id}', summary: 'Update a task', tags: ['Tasks'],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'title', type: 'string', example: 'Updated Task'),
+                    new OA\Property(property: 'description', type: 'string', example: 'Updated description'),
+                    new OA\Property(property: 'status', type: 'string', enum: ['pending', 'in_progress', 'completed']),
+                    new OA\Property(property: 'due_date', type: 'string', format: 'date', example: '2026-12-31'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Task updated successfully'),
+            new OA\Response(response: 404, description: 'Task not found'),
+            new OA\Response(response: 422, description: 'Validation error')
+        ]
+    )]
     public function update(Request $request, $id)
     {
-        $task = Task::find($id);
-
-        if (!$task) {
-            return response()->json([
-                'message' => 'Task not found'
-            ], 404);
+        $validated = $request->validate([
+            'title'       => 'sometimes|string|max:255',
+            'description' => 'nullable|string',
+            'status'      => 'sometimes|in:pending,in_progress,completed',
+            'due_date'    => 'nullable|date',
+        ]);
+        $task = $this->taskService->updateTask($id, $validated);
+        if (request()->is('api/*') || request()->wantsJson()) {
+            return response()->json(['message' => 'Task updated successfully', 'data' => $task], 200);
         }
-
-        $request->validate([
-        'user_id'     => 'required|exists:users,id',
-        'title'       => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'status'      => 'required|in:pending,in_progress,completed',
-        'due_date'    => 'nullable|date',
-    ]);
-
-        return response()->json([
-            'message' => 'Task updated successfully',
-            'data'    => $task
-        ], 200);
+        return redirect()->route('users.index')->with('success', 'Task updated successfully');
     }
 
-    // DELETE /api/tasks/{id} - Delete a task
+    #[OA\Delete(path: '/api/tasks/{id}', summary: 'Delete a task', tags: ['Tasks'],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [
+            new OA\Response(response: 200, description: 'Task deleted successfully'),
+            new OA\Response(response: 404, description: 'Task not found')
+        ]
+    )]
     public function destroy($id)
     {
-        $task = Task::find($id);
-
-        if (!$task) {
-            return response()->json([
-                'message' => 'Task not found'
-            ], 404);
+        $this->taskService->deleteTask($id);
+        if (request()->is('api/*') || request()->wantsJson()) {
+            return response()->json(['message' => 'Task deleted successfully'], 200);
         }
-
-        $task->delete();
-
-        return response()->json([
-            'message' => 'Task deleted successfully'
-        ], 200);
+        return redirect()->route('users.index')->with('success', 'Task deleted successfully');
     }
-
 }
