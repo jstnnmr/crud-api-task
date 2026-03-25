@@ -17,9 +17,20 @@ class UsersController extends Controller
         $this->userService = $userService;
     }
 
+    // /**
+    // *    @OA\Get(
+    // *        path="/api/users",
+    // *        operationId="getAllUsers",
+    // *        tags={"Users"},
+    // *        summary="Get all users",
+    // *        description="Success",
+    // *        @OA\Response(response=200, description="Success")
+    // *    )
+    // */
     #[OA\Get(path: '/api/users', summary: 'Get all users', tags: ['Users'],
         responses: [new OA\Response(response: 200, description: 'Success')]
     )]
+
     public function index(Request $request)
     {
         $users = $this->userService->getAllUsers(); 
@@ -32,6 +43,23 @@ class UsersController extends Controller
         return view('users.data', compact('users'));
     }
 
+//     /**
+// *    @OA\Get(
+// *        path="/api/users/{id}",
+// *        operationId="getUserbyId",
+// *        tags={"Users"},
+// *        summary="Get user by ID",
+// *        description="Success",
+// *        @OA\Parameter(
+// *            name="id",
+// *            in="path",
+// *            required=true,
+// *            @OA\Schema(type="integer"),
+// *        ),
+// *        @OA\Response(response=200, description="Success"),
+// *        @OA\Response(response=404, description="User not found")
+// *    )
+// */
     #[OA\Get(path: '/api/users/{id}', summary: 'Get user by ID', tags: ['Users'],
         parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
         responses: [
@@ -39,6 +67,7 @@ class UsersController extends Controller
             new OA\Response(response: 404, description: 'User not found')
         ]
     )]
+    
     public function show($id)
     {
         $user = $this->userService->getUserById($id);
@@ -57,6 +86,33 @@ class UsersController extends Controller
         if (!$user) {
             return redirect()->route('users.index')->with('error', 'User not found');
         }}
+
+    //         /**
+    // *    @OA\Post(
+    // *        path="/api/users",
+    // *        operationId="createUser",
+    // *        tags={"Users"},
+    // *        summary="Create a user",
+    // *        description="Success",
+    // *        @OA\RequestBody(
+    // *            required=true,
+    // *            @OA\JsonContent(
+    // *                @OA\Property(
+    // *                    property="name",
+    // *                    type="string",
+    // *                    example="John Doe",
+    // *                ),
+    // *                @OA\Property(
+    // *                    property="email",
+    // *                    type="string",
+    // *                    example="john@example.com",
+    // *                ),
+    // *            ),
+    // *        ),
+    // *        @OA\Response(response=201, description="User created successfully"),
+    // *        @OA\Response(response=422, description="Validation error")
+    // *    )
+    // */
 
     #[OA\Post(path: '/api/users', summary: 'Create a user', tags: ['Users'],
         requestBody: new OA\RequestBody(
@@ -110,14 +166,40 @@ class UsersController extends Controller
         return redirect()->route('users.index')
             ->with('success', 'User created successfully');
     }
-
+//     /**
+// *    @OA\Put(
+// *        path="/api/users/{id}",
+// *        operationId="updateUser",
+// *        tags={"Users"},
+// *        summary="Update a user",
+// *        description="Success",
+// *        @OA\RequestBody(
+// *            required=true,
+// *            @OA\JsonContent(
+// *                @OA\Property(
+// *                    property="name",
+// *                    type="string",
+// *                    example="John Doe",
+// *                ),
+// *                @OA\Property(
+// *                    property="email",
+// *                    type="string",
+// *                    example="john-updated@example.com",
+// *                ),
+// *            ),
+// *        ),
+// *        @OA\Response(response=200, description="User updated successfully"),
+// *        @OA\Response(response=404, description="User not found"),
+// *        @OA\Response(response=422, description="Validation error")
+// *    )
+// */
     #[OA\Put(path: '/api/users/{id}', summary: 'Update a user', tags: ['Users'],
         parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
                     new OA\Property(property: 'name', type: 'string', example: 'John Doe'),
-                    new OA\Property(property: 'email', type: 'string', example: 'john@example.com'),
+                    new OA\Property(property: 'email', type: 'string', example: 'john-updated@example.com'),
                 ]
             )
         ),
@@ -159,6 +241,37 @@ class UsersController extends Controller
         return redirect()->route('users.index')->with('success', 'User updated successfully');
     }
 
+//     /**
+// *    @OA\Delete(
+// *        path="/api/users/{id}",
+// *        operationId="deleteUser",
+// *        tags={"Users"},
+// *        summary="Delete a user",
+// *        @OA\Parameter(
+// *            name="id",
+// *            in="path",
+// *            required=true,
+// *            @OA\Schema(type="string"),
+// *        ),
+// *        @OA\RequestBody(
+// *            required=true,
+// *            @OA\JsonContent(
+// *                @OA\Property(
+// *                    property="name",
+// *                    type="string",
+// *                    example="John Doe",
+// *                ),
+// *                @OA\Property(
+// *                    property="email",
+// *                    type="string",
+// *                    example="john-updated@example.com",
+// *                ),
+// *            ),
+// *        ),
+// *        @OA\Response(response=200, description="User deleted successfully"),
+// *        @OA\Response(response=404, description="User not found")
+// *    )
+// */
     #[OA\Delete(path: '/api/users/{id}', summary: 'Delete a user', tags: ['Users'],
         parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
         responses: [
