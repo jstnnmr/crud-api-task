@@ -18,14 +18,25 @@
 #### Step by step guide on installing and setting up the Laravel project
 - **Step 1:** Clone the repository:
     Open Github Desktop, clone the repository by pasting the URL.
-- **Step 2:** Set up database:
-    Using MySQL, create a database named 'crud-api'.
-    Run `php artisan migrate` in VSC terminal
-- **Step 3:** Install Composer:
-    `composer install`
-- **Step 4:** Test the project in using any API tester such as Postman.
-    For Postman tester, download and import as collection the postman file provided and test the functionalities.
 
+- **Step 2:** Install dependencies:
+    Run `composer install` in the VSCode terminal.
+
+- **Step 3:** Set up environment configuration:
+    Run `cp .env.example .env` in the terminal.
+    Then run `php artisan key:generate`.
+    Open `.env` and set your database credentials:
+        DB_DATABASE=crud-api
+        DB_USERNAME=root
+        DB_PASSWORD= 
+
+- **Step 4:** Set up database:
+    Using MySQL, create a database named 'crud-api'.
+    Then run `php artisan migrate` in the VSCode terminal.
+
+- **Step 5:** Test the API endpoints using any API tester such as Postman or Swagger.
+    Download and import the provided Postman collection file and test the functionalities.
+    Or open 'http://crud-api-task.test/swagger'
 
 
 ## POSTMAN Testing

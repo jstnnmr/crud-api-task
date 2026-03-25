@@ -20,21 +20,11 @@
                 "key": "Accept",
                 "value": "application/json",
                 "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Cache-Control",
-                "value": "no-cache",
-                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"name\": \"Taylor Swift\",\r\n    \"email\": \"sample@gmail.com\"\r\n}",
+              "raw": "{\r\n    \"name\": \"Taylor Swift\",\r\n    \"email\": \"tswift@gmail.com\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -42,7 +32,7 @@
               }
             },
             "url": {
-              "raw": "http://crud-api-task.test/api/tasks?due_date=in_progress",
+              "raw": "http://crud-api-task.test/api/users",
               "protocol": "http",
               "host": [
                 "crud-api-task",
@@ -50,13 +40,7 @@
               ],
               "path": [
                 "api",
-                "tasks"
-              ],
-              "query": [
-                {
-                  "key": "due_date",
-                  "value": "in_progress"
-                }
+                "users"
               ]
             }
           },
@@ -237,7 +221,7 @@
               }
             ],
             "url": {
-              "raw": "http://crud-api-task.test/api/tasks?status=completed&user_id=1",
+              "raw": "http://crud-api-task.test/api/tasks/2",
               "protocol": "http",
               "host": [
                 "crud-api-task",
@@ -245,7 +229,8 @@
               ],
               "path": [
                 "api",
-                "tasks"
+                "tasks",
+                "2"
               ],
               "query": [
                 {
@@ -260,11 +245,13 @@
                 },
                 {
                   "key": "status",
-                  "value": "completed"
+                  "value": "completed",
+                  "disabled": true
                 },
                 {
                   "key": "user_id",
-                  "value": "1"
+                  "value": "1",
+                  "disabled": true
                 },
                 {
                   "key": "sort",
@@ -284,7 +271,7 @@
           "response": []
         },
         {
-          "name": "remove user",
+          "name": "remove task",
           "request": {
             "method": "DELETE",
             "header": [],

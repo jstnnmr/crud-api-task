@@ -8,7 +8,8 @@ return [
             'title' => 'L5 Swagger UI',
         ],
         'routes' => [
-            'api' => 'api/documentation',
+            'api' => 'swagger', 
+            'docs' => 'docs',
         ],
         'paths' => [
             'use_absolute_path' => env('L5_SWAGGER_USE_ABSOLUTE_PATH', true),

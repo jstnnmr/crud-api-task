@@ -22,9 +22,14 @@ class UserRepository
         return $user;
     }
 
-    public function delete(int $id): bool
+    public function delete($id)
     {
-        $user = User::findOrFail($id); 
+        $user = User::find($id);
+        
+        if (!$user) {
+            return null;
+        }
+
         return $user->delete();
     }
 

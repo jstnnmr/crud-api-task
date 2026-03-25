@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\UserService;
 use OpenApi\Attributes as OA;
+use Illuminate\Support\Facades\Validator;
+
 
 class UsersController extends Controller
 {
@@ -18,12 +20,15 @@ class UsersController extends Controller
     #[OA\Get(path: '/api/users', summary: 'Get all users', tags: ['Users'],
         responses: [new OA\Response(response: 200, description: 'Success')]
     )]
-    public function index()
+    public function index(Request $request)
     {
-        $users = $this->userService->getAllUsers();
-        if (request()->is('api/*') || request()->wantsJson()) {
-            return response()->json($users);
-        }
+        $users = $this->userService->getAllUsers(); 
+            if(request()->is('api/*') || request()->wantsJson()){
+                return response()->json([
+                    'success' => true,
+                    'data' => $users
+                ]);
+    }
         return view('users.data', compact('users'));
     }
 
@@ -37,11 +42,21 @@ class UsersController extends Controller
     public function show($id)
     {
         $user = $this->userService->getUserById($id);
-        if (request()->is('api/*') || request()->wantsJson()) {
-            return response()->json($user);
+        if(request()->is('api/*') || request()->wantsJson()){
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+            return response()->json([
+                'success' => true,
+                'data' => $user
+            ]);
         }
-        return view('users.data', compact('user'));
-    }
+        if (!$user) {
+            return redirect()->route('users.index')->with('error', 'User not found');
+        }}
 
     #[OA\Post(path: '/api/users', summary: 'Create a user', tags: ['Users'],
         requestBody: new OA\RequestBody(
@@ -59,17 +74,41 @@ class UsersController extends Controller
             new OA\Response(response: 422, description: 'Validation error')
         ]
     )]
+
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'name'  => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
         ]);
-        $user = $this->userService->createUser($validated);
-        if (request()->is('api/*') || request()->wantsJson()) {
-            return response()->json(['message' => 'User created successfully', 'data' => $user], 201);
+
+        if ($validator->fails()) {
+
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
         }
-        return redirect()->route('users.index')->with('success', 'User created successfully');
+
+        $user = $this->userService->createUser($validator->validated());
+
+        if ($request->is('api/*') || $request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully',
+                'data' => $user
+            ], 201);
+        }
+
+        return redirect()->route('users.index')
+            ->with('success', 'User created successfully');
     }
 
     #[OA\Put(path: '/api/users/{id}', summary: 'Update a user', tags: ['Users'],
@@ -90,13 +129,32 @@ class UsersController extends Controller
     )]
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'name'  => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $id,
+        $validator = Validator::make($request->all(),[
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' .$id,
         ]);
-        $user = $this->userService->updateUser($id, $validated);
-        if (request()->is('api/*') || request()->wantsJson()) {
-            return response()->json(['message' => 'User updated successfully', 'data' => $user], 200);
+
+        if ($validator->fails()){
+
+            if ($request->is('api/*') || $request->expectsJson()){
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        return redirect()->back()
+            ->withErrors($validator)
+            ->withInput();
+        }
+        $user = $this->userService->updateUser($id, $validator->validated());
+
+        if ($request->is('api/*') || $request->expectsJson()){
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated succesfully',
+                'data' => $user
+            ]);
         }
         return redirect()->route('users.index')->with('success', 'User updated successfully');
     }
@@ -108,11 +166,23 @@ class UsersController extends Controller
             new OA\Response(response: 404, description: 'User not found')
         ]
     )]
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $this->userService->deleteUser($id);
-        if (request()->is('api/*') || request()->wantsJson()) {
-            return response()->json(['message' => 'User deleted successfully'], 200);
+        $user = $this->userService->deleteUser($id);
+        if (!$user) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found'
+                ], 404);
+            }
+            return redirect()->route('users.index')->with('error', 'User not found');
+        }
+        if ($request->is('api/*') || $request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'User deleted successfully'
+            ]);
         }
         return redirect()->route('users.index')->with('success', 'User deleted successfully');
     }

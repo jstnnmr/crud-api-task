@@ -14,7 +14,7 @@ use OpenApi\Attributes as OA;
     url: "http://crud-api-task.test", 
     description: "Local Development Server"
 )]
-#[OA\PathItem(path: '/')]
+
 class HomeController extends Controller
 {
 } 

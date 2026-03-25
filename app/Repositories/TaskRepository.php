@@ -11,23 +11,26 @@ class TaskRepository
         return Task::create($data);
     }
 
-    public function findById(int $id): Task
+    public function findById($id)
     {
-        return Task::findOrFail($id);
+        return Task::find($id);
     }
 
-    public function update(int $id, array $data): Task
+    public function delete($id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::find($id);
+        if (!$task) return null;
+        return $task->delete();
+    }
+
+    public function update($id, array $data)
+    {
+        $task = Task::find($id);
+        if (!$task) return null;
         $task->update($data);
         return $task;
     }
-
-    public function delete(int $id): bool
-    {
-        return Task::destroy($id);
-    }
-
+    
     public function getAll()
     {
         return Task::all();

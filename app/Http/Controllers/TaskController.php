@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\TaskService;
 use OpenApi\Attributes as OA;
+use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
@@ -34,13 +35,30 @@ class TaskController extends Controller
             new OA\Response(response: 404, description: 'Task not found')
         ]
     )]
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $task = $this->taskService->getTaskById($id);
-        if (request()->is('api/*') || request()->wantsJson()) {
-            return response()->json($task);
+
+        //Check if task exists FIRST
+        if (!$task) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Task not found'
+                ], 404);
+            }
+            return redirect()->route('users.index')->with('error', 'Task not found');
         }
-        return redirect()->route('users.index');
+
+        //Task exists, return the data
+        if ($request->is('api/*') || $request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'data' => $task
+            ]);
+        }
+
+        return view('tasks.show', compact('task'));
     }
 
     #[OA\Post(path: '/api/tasks', summary: 'Create a task', tags: ['Tasks'],
@@ -64,16 +82,30 @@ class TaskController extends Controller
     )]
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'user_id'     => 'required|exists:users,id',
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
             'status'      => 'required|in:pending,in_progress,completed',
             'due_date'    => 'nullable|date',
         ]);
-        $task = $this->taskService->createTask($validated);
-        if (request()->is('api/*') || request()->wantsJson()) {
-            return response()->json(['message' => 'Task created successfully', 'data' => $task], 201);
+        if ($validator->fails()) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors'  => $validator->errors()
+                ], 422);
+            }
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+        $task = $this->taskService->createTask($validator->validated());
+        if ($request->is('api/*') || $request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Task created successfully',
+                'data'    => $task
+            ], 201);
         }
         return redirect()->route('users.index')->with('success', 'Task created successfully');
     }
@@ -97,14 +129,24 @@ class TaskController extends Controller
         ]
     )]
     public function update(Request $request, $id)
-    {
+    {   
         $validated = $request->validate([
             'title'       => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'status'      => 'sometimes|in:pending,in_progress,completed',
             'due_date'    => 'nullable|date',
         ]);
+
         $task = $this->taskService->updateTask($id, $validated);
+        if (!$task) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Task not found'
+                ], 404);
+            }
+            return redirect()->route('users.index')->with('error', 'Task not found');
+        }
         if (request()->is('api/*') || request()->wantsJson()) {
             return response()->json(['message' => 'Task updated successfully', 'data' => $task], 200);
         }
@@ -121,6 +163,7 @@ class TaskController extends Controller
     public function destroy($id)
     {
         $this->taskService->deleteTask($id);
+
         if (request()->is('api/*') || request()->wantsJson()) {
             return response()->json(['message' => 'Task deleted successfully'], 200);
         }
