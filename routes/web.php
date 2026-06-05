@@ -26,3 +26,8 @@ Route::get('/', function () {
         ]
     ]);        
 });
+
+Route::get('/data', function () {
+    $users = \App\Models\User::with('tasks')->get();
+    return view('users.data', compact('users')); 
+});
