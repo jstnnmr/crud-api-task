@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Sign In | Lumina Tasks')
+@section('title', 'Sign In | EaseTask')
 
 @push('styles')
 <style>
@@ -41,11 +41,6 @@
         0%, 100% { transform: translateY(0) rotate(-5deg); }
         50%       { transform: translateY(-3px) rotate(5deg); }
     }
-    .auth-title {
-        font-size: 1.4rem;
-        color: var(--text);
-        margin-bottom: 0.3rem;
-    }
     .auth-sub {
         font-size: 0.75rem;
         color: var(--text-muted);
@@ -72,11 +67,6 @@
         text-decoration: none;
     }
     .auth-footer a:hover { text-decoration: underline; }
-    .field input {
-        background: var(--surface2);
-        color: var(--text);
-        border-color: var(--border);
-    }
     .field input::placeholder { color: var(--text-muted); opacity: 0.6; }
     .field input:focus {
         outline: none;
@@ -109,7 +99,7 @@
             @csrf
             <div class="field">
                 <label>Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" placeholder="you@cosmos.io" required>
+                <input type="email" name="email" value="{{ old('email') }}" placeholder="you@gmail.io" required>
             </div>
             <div class="field">
                 <label>Password</label>

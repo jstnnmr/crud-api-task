@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Create Account | Lumina Tasks')
+@section('title', 'Create Account | EaseTask')
 
 @push('styles')
 <style>
@@ -41,11 +41,6 @@
         0%, 100% { transform: scale(1) rotate(-5deg); }
         50%       { transform: scale(1.1) rotate(5deg); }
     }
-    .auth-title {
-        font-size: 1.4rem;
-        color: var(--text);
-        margin-bottom: 0.3rem;
-    }
     .auth-sub {
         font-size: 0.75rem;
         color: var(--text-muted);
@@ -72,11 +67,6 @@
         text-decoration: none;
     }
     .auth-footer a:hover { text-decoration: underline; }
-    .field input {
-        background: var(--surface2);
-        color: var(--text);
-        border-color: var(--border);
-    }
     .field input::placeholder { color: var(--text-muted); opacity: 0.6; }
     .field input:focus {
         outline: none;
@@ -118,6 +108,14 @@
             <div class="field">
                 <label>Password</label>
                 <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+            <div class="field">
+                <label>Role</label>
+                <select name="role">
+                    <option value="">— Select Role —</option>
+                    <option value="parent" {{ old('role') === 'parent' ? 'selected' : '' }}>Parent 🌙</option>
+                    <option value="child"  {{ old('role') === 'child'  ? 'selected' : '' }}>Child ⭐</option>
+                </select>
             </div>
             <button type="submit" class="btn-full">Create Account ✦</button>
         </form>

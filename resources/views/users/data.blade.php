@@ -1,9 +1,10 @@
 @extends('layouts.app')
-@section('title', 'Dashboard | Lumina Tasks')
+@section('title', 'Subjects | EaseTask')
 
 @push('styles')
 <style>
-    /* ── LAYOUT ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     .container {
         max-width: 1280px;
         margin: 0 auto;
@@ -12,7 +13,6 @@
         z-index: 1;
     }
 
-    /* ── FLASH ── */
     .flash {
         background: rgba(110,231,183,0.1);
         border: 1px solid rgba(110,231,183,0.25);
@@ -26,7 +26,6 @@
         gap: 0.5rem;
     }
 
-    /* ── PAGE HEADER ── */
     .page-header {
         display: flex;
         align-items: flex-end;
@@ -53,7 +52,6 @@
         opacity: 0.7;
     }
 
-    /* ── BUTTONS ── */
     .btn {
         display: inline-flex;
         align-items: center;
@@ -97,10 +95,16 @@
         border: 1px solid rgba(248,113,113,0.25);
     }
     .btn-danger:hover { background: rgba(248,113,113,0.2); }
+    .btn-ghost {
+        background: transparent;
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: var(--surface2); color: var(--text); }
     .btn-sm { padding: 0.28rem 0.75rem; font-size: 0.68rem; }
+    .btn-xs { padding: 0.2rem 0.55rem; font-size: 0.62rem; }
     .btn-full { width: 100%; justify-content: center; padding: 0.63rem 1rem; font-size: 0.8rem; border-radius: 12px; }
 
-    /* ── CARD ── */
     .card {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -108,117 +112,113 @@
         overflow: hidden;
     }
 
-    /* ── TABLE ── */
-    table { width: 100%; border-collapse: collapse; }
-    thead tr {
-        background: var(--surface2);
-        border-bottom: 1px solid var(--border);
+    .subjects-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
     }
-    th {
-        padding: 0.85rem 1.25rem;
-        font-family: 'DM Sans', sans-serif;
+
+    .subject-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: border-color 0.15s;
+    }
+    .subject-card:hover { border-color: rgba(142,125,255,0.3); }
+
+    .subject-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface2);
+    }
+    .subject-color {
+        width: 12px; height: 12px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        border: 1px solid rgba(255,255,255,0.15);
+    }
+    .subject-name {
+        font-family: 'Playfair Display', serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text);
+        flex: 1;
+    }
+    .subject-stats {
         font-size: 0.62rem;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
+    .subject-actions {
+        display: flex;
+        gap: 0.35rem;
+        margin-left: auto;
+    }
+
+    .task-table { width: 100%; border-collapse: collapse; }
+    .task-table th {
+        padding: 0.6rem 1.25rem;
+        font-size: 0.58rem;
         font-weight: 600;
         color: var(--text-muted);
         letter-spacing: 0.13em;
         text-transform: uppercase;
         text-align: left;
-    }
-    tbody tr {
-        border-bottom: 1px solid var(--border);
-        transition: background 0.12s;
-    }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: var(--surface2); }
-    td {
-        padding: 0.9rem 1.25rem;
-        font-size: 0.8rem;
-        color: var(--text);
-        vertical-align: middle;
-    }
-
-    /* ── simple-datatables overrides ── */
-    .dataTable-wrapper .dataTable-top,
-    .dataTable-wrapper .dataTable-bottom {
-        padding: 1rem 1.5rem;
         background: var(--surface);
         border-bottom: 1px solid var(--border);
     }
-    .dataTable-wrapper .dataTable-bottom {
-        border-bottom: none;
-        border-top: 1px solid var(--border);
+    .task-table td {
+        padding: 0.7rem 1.25rem;
+        font-size: 0.75rem;
+        color: var(--text);
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border);
     }
-    .dataTable-search input,
-    .dataTable-selector {
-        background: var(--surface2) !important;
-        border: 1px solid var(--border) !important;
-        color: var(--text) !important;
-        border-radius: 999px !important;
-        padding: 0.4rem 1rem !important;
-        font-family: 'DM Sans', sans-serif !important;
-        font-size: 0.75rem !important;
-        outline: none !important;
-    }
-    .dataTable-search input:focus { border-color: var(--accent) !important; }
-    .dataTable-pagination li a {
-        background: var(--surface2) !important;
-        border: 1px solid var(--border) !important;
-        color: var(--text-muted) !important;
-        border-radius: 999px !important;
-        font-size: 0.72rem !important;
-    }
-    .dataTable-pagination li.active a {
-        background: var(--accent) !important;
-        border-color: var(--accent) !important;
-        color: #fff !important;
-    }
-    .dataTable-info { color: var(--text-muted) !important; font-size: 0.72rem !important; }
+    .task-table tr:last-child td { border-bottom: none; }
+    .task-table tr:hover td { background: var(--surface2); }
 
-    /* ── ID BADGE ── */
-    .id-badge {
-        display: inline-block;
-        background: rgba(142,125,255,0.12);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 2px 9px;
+    .task-title { font-weight: 500; }
+    .task-desc {
         font-size: 0.68rem;
         color: var(--text-muted);
+        opacity: 0.7;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    /* ── TASK CHIPS ── */
-    .task-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: var(--surface2);
-        border: 1px solid var(--border);
+    .badge {
+        display: inline-block;
+        padding: 2px 8px;
         border-radius: 999px;
-        padding: 3px 10px 3px 7px;
-        font-size: 0.67rem;
+        font-size: 0.6rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+    }
+    .badge-low { background: rgba(110,231,183,0.12); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.2); }
+    .badge-medium { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.2); }
+    .badge-high { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.2); }
+    .badge-pending { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.15); }
+    .badge-in_progress { background: rgba(110,231,183,0.1); color: #6ee7b7; border: 1px solid rgba(110,231,183,0.15); }
+    .badge-completed { background: rgba(142,125,255,0.1); color: #8e7dff; border: 1px solid rgba(142,125,255,0.15); }
+    .badge-category { background: rgba(129,140,248,0.08); color: #818cf8; border: 1px solid rgba(129,140,248,0.15); }
+    .due-date { font-size: 0.65rem; color: var(--text-muted); white-space: nowrap; }
+    .no-tasks {
+        text-align: center;
+        padding: 1.5rem;
+        font-size: 0.72rem;
         color: var(--text-muted);
-        cursor: pointer;
-        transition: all 0.12s;
-        margin: 2px 2px 2px 0;
+        font-style: italic;
+        opacity: 0.6;
     }
-    .task-chip:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-        background: rgba(142,125,255,0.1);
-    }
-    .task-chip .status-dot {
-        width: 5px; height: 5px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-    .status-pending     { background: #fcd34d; }
-    .status-in_progress { background: #6ee7b7; }
-    .status-completed   { background: var(--accent); }
-    .no-tasks { font-size: 0.72rem; color: var(--text-muted); font-style: italic; opacity: 0.6; }
 
-    /* ── ACTIONS ── */
-    .actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-
-    /* ── LACE ── */
     .lace {
         text-align: center;
         font-size: 1rem;
@@ -229,7 +229,6 @@
         user-select: none;
     }
 
-    /* ── MODAL ── */
     .modal-overlay {
         display: none;
         position: fixed;
@@ -237,7 +236,7 @@
         z-index: 200;
         align-items: center;
         justify-content: center;
-        background: rgba(15,12,41,0.7);
+        background: rgba(15,12,41,0.75);
         backdrop-filter: blur(6px);
     }
     .modal-overlay.active { display: flex; }
@@ -248,7 +247,7 @@
         width: 100%;
         max-width: 420px;
         margin: 1rem;
-        box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.5);
         animation: modalIn 0.2s ease;
     }
     @keyframes modalIn {
@@ -285,7 +284,6 @@
     .modal-body { padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem; }
     .modal-footer { padding: 0 1.4rem 1.4rem; display: flex; flex-direction: column; gap: 0.55rem; }
 
-    /* ── FORM FIELDS ── */
     .field label {
         display: block;
         font-size: 0.64rem;
@@ -316,7 +314,6 @@
     .field select option { background: var(--surface2); color: var(--text); }
     .field .err { color: #f87171; font-size: 0.68rem; margin-top: 4px; }
 
-    /* ── DELETE MODAL ── */
     .delete-icon {
         width: 52px; height: 52px;
         background: rgba(248,113,113,0.1);
@@ -334,7 +331,10 @@
     }
     .delete-text strong { color: var(--text); }
     .delete-actions { display: flex; gap: 0.75rem; }
-    .delete-actions .btn { flex: 1; justify-content: center; padding: 0.6rem; font-size: 0.78rem; border-radius: 12px; }
+    .delete-actions .btn {
+        flex: 1; justify-content: center;
+        padding: 0.6rem; font-size: 0.78rem; border-radius: 12px;
+    }
 </style>
 @endpush
 
@@ -352,115 +352,171 @@
 
     <div class="page-header">
         <div>
-            <div class="page-title">
-                🌙 User Records
-            </div>
-            <div class="page-subtitle">Manage users &amp; tasks — across the galaxy</div>
+            <div class="page-title"> Subjects</div>
+            <div class="page-subtitle">Manage your subjects &amp; tasks</div>
         </div>
-        <button onclick="toggleModal('addUserModal')" class="btn btn-primary">
-            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-            </svg>
-            Add User
-        </button>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button onclick="toggleModal('addCategoryModal')" class="btn btn-ghost">
+                + Category
+            </button>
+            <button onclick="toggleModal('addSubjectModal')" class="btn btn-primary">
+                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add Subject
+            </button>
+        </div>
     </div>
 
-    <div class="card">
-        <table id="search-table">
+    @forelse ($subjects as $subject)
+    <div class="subject-card" style="margin-bottom:1.25rem;">
+        <div class="subject-header">
+            <span class="subject-color" style="background:{{ $subject->color ?? '#8e7dff' }}"></span>
+            <span class="subject-name">{{ $subject->name }}</span>
+            <span class="subject-stats">
+                {{ $subject->tasks->where('status', 'completed')->count() }}/{{ $subject->tasks->count() }} done
+            </span>
+            <div class="subject-actions">
+                <button onclick="toggleModal('addTaskModal-{{ $subject->id }}')" class="btn btn-success btn-xs">+ Task</button>
+                <button onclick="toggleModal('editSubjectModal-{{ $subject->id }}')" class="btn btn-blue btn-xs">Edit</button>
+                <button onclick="toggleModal('deleteSubjectModal-{{ $subject->id }}')" class="btn btn-danger btn-xs">Del</button>
+            </div>
+        </div>
+
+        @if ($subject->tasks->isNotEmpty())
+        <table class="task-table">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Tasks</th>
-                    <th>Actions</th>
+                    <th>Task</th>
+                    <th>Category</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Due</th>
+                    <th style="text-align:right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse ($users as $user)
+                @foreach ($subject->tasks as $task)
                 <tr>
-                    <td><span class="id-badge">#{{ $user->id }}</span></td>
-                    <td style="font-weight:500;">{{ $user->name }}</td>
-                    <td style="color:var(--text-muted);">{{ $user->email }}</td>
                     <td>
-                        @forelse ($user->tasks as $task)
-                            <span onclick="toggleModal('editTaskModal-{{ $task->id }}')" class="task-chip">
-                                <span class="status-dot status-{{ $task->status }}"></span>
-                                {{ $task->title }}
-                            </span>
-                        @empty
-                            <span class="no-tasks">No tasks yet ✨</span>
-                        @endforelse
+                        <div class="task-title">{{ $task->title }}</div>
+                        @if ($task->description)
+                        <div class="task-desc">{{ $task->description }}</div>
+                        @endif
                     </td>
                     <td>
-                        <div class="actions">
-                            <button onclick="toggleModal('addTaskModal-{{ $user->id }}')" class="btn btn-success btn-sm">+ Task</button>
-                            <button onclick="toggleModal('editUserModal-{{ $user->id }}')" class="btn btn-blue btn-sm">Edit</button>
-                            <button onclick="toggleModal('deleteModal-{{ $user->id }}')" class="btn btn-danger btn-sm">Delete</button>
+                        @if ($task->category)
+                        <span class="badge badge-category">{{ $task->category->name }}</span>
+                        @else
+                        <span style="color:var(--text-muted);opacity:0.4;font-size:0.62rem;">—</span>
+                        @endif
+                    </td>
+                    <td><span class="badge badge-{{ $task->priority }}">{{ ucfirst($task->priority) }}</span></td>
+                    <td><span class="badge badge-{{ $task->status }}">{{ str_replace('_', ' ', ucfirst($task->status)) }}</span></td>
+                    <td>
+                        @if ($task->status === 'completed')
+                        <span class="due-date" style="color:#6ee7b7;">✔ DONE</span>
+                        @elseif ($task->due_date)
+                        <span class="due-date">{{ \Carbon\Carbon::parse($task->due_date)->format('M j') }}</span>
+                        @else
+                        <span style="color:var(--text-muted);opacity:0.4;font-size:0.62rem;">—</span>
+                        @endif
+                    </td>
+                    <td style="text-align:right;">
+                        <div class="actions" style="display:flex;gap:0.3rem;justify-content:flex-end;">
+                            <button onclick="toggleModal('editTaskModal-{{ $task->id }}')" class="btn btn-blue btn-xs">Edit</button>
+                            <button onclick="toggleModal('deleteTaskModal-{{ $task->id }}')" class="btn btn-danger btn-xs">Del</button>
                         </div>
                     </td>
                 </tr>
-                @empty
-                <tr>
-                    <td colspan="5" style="text-align:center; color:var(--text-muted); padding:3rem; opacity:0.6;">
-                        No users found. ✦
-                    </td>
-                </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
-        <div class="lace">✦ · · · ✦ · · · ✦ · · · ✦</div>
+        @else
+        <div class="no-tasks">No tasks yet. Add one ✨</div>
+        @endif
     </div>
+    @empty
+    <div class="card" style="text-align:center;padding:3rem;color:var(--text-muted);opacity:0.6;">
+        No subjects yet. Create your first subject to get started ✦
+    </div>
+    @endforelse
+
+    <div class="lace">✦ · · · ✦ · · · ✦ · · · ✦</div>
 
 </div>
 
 
-{{-- ===================== ADD USER MODAL ===================== --}}
-<div id="addUserModal" class="modal-overlay">
+{{-- ADD SUBJECT MODAL --}}
+<div id="addSubjectModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <span class="modal-title">✦ New User</span>
-            <button class="modal-close" onclick="toggleModal('addUserModal')">&times;</button>
+            <span class="modal-title">✦ New Subject</span>
+            <button class="modal-close" onclick="toggleModal('addSubjectModal')">&times;</button>
         </div>
-        <form action="{{ url('/users') }}" method="POST">
+        <form action="{{ route('subjects.store') }}" method="POST">
             @csrf
             <div class="modal-body">
                 <div class="field">
-                    <label>Name</label>
-                    <input type="text" name="name" placeholder="Full name" />
+                    <label>Subject Name</label>
+                    <input type="text" name="name" placeholder="e.g. Mathematics" required />
                     @error('name') <div class="err">{{ $message }}</div> @enderror
                 </div>
                 <div class="field">
-                    <label>Email</label>
-                    <input type="email" name="email" placeholder="email@cosmos.io" />
-                    @error('email') <div class="err">{{ $message }}</div> @enderror
+                    <label>Color</label>
+                    <input type="color" name="color" value="#8e7dff" style="height:42px;padding:3px;cursor:pointer;" />
+                    @error('color') <div class="err">{{ $message }}</div> @enderror
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary btn-full">Create User ✦</button>
+                <button type="submit" class="btn btn-primary btn-full">Create Subject ✦</button>
             </div>
         </form>
     </div>
 </div>
 
 
-{{-- ===================== PER USER MODALS ===================== --}}
-@foreach ($users as $user)
-
-{{-- Add Task --}}
-<div id="addTaskModal-{{ $user->id }}" class="modal-overlay">
+{{-- ADD CATEGORY MODAL --}}
+<div id="addCategoryModal" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <span class="modal-title">Add Task — <em style="color:var(--accent)">{{ $user->name }}</em></span>
-            <button class="modal-close" onclick="toggleModal('addTaskModal-{{ $user->id }}')">&times;</button>
+            <span class="modal-title">✦ New Category</span>
+            <button class="modal-close" onclick="toggleModal('addCategoryModal')">&times;</button>
         </div>
-        <form action="{{ url('/tasks') }}" method="POST">
+        <form action="{{ route('categories.store') }}" method="POST">
             @csrf
-            <input type="hidden" name="user_id" value="{{ $user->id }}" />
+            <div class="modal-body">
+                <div class="field">
+                    <label>Category Name</label>
+                    <input type="text" name="name" placeholder="e.g. Homework, Quiz" required />
+                    @error('name') <div class="err">{{ $message }}</div> @enderror
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary btn-full">Create Category ✦</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{{-- PER SUBJECT MODALS --}}
+@foreach ($subjects as $subject)
+
+{{-- Add Task --}}
+<div id="addTaskModal-{{ $subject->id }}" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Add Task — <em style="color:var(--accent)">{{ $subject->name }}</em></span>
+            <button class="modal-close" onclick="toggleModal('addTaskModal-{{ $subject->id }}')">&times;</button>
+        </div>
+        <form action="{{ route('tasks.store') }}" method="POST">
+            @csrf
+            <input type="hidden" name="subject_id" value="{{ $subject->id }}" />
             <div class="modal-body">
                 <div class="field">
                     <label>Title</label>
-                    <input type="text" name="title" placeholder="Task title" />
+                    <input type="text" name="title" placeholder="Task title" required />
                     @error('title') <div class="err">{{ $message }}</div> @enderror
                 </div>
                 <div class="field">
@@ -469,18 +525,37 @@
                     @error('description') <div class="err">{{ $message }}</div> @enderror
                 </div>
                 <div class="field">
-                    <label>Due Date</label>
-                    <input type="date" name="due_date" />
-                    @error('due_date') <div class="err">{{ $message }}</div> @enderror
+                    <label>Category</label>
+                    <select name="category_id">
+                        <option value="">— None —</option>
+                        @foreach ($categories as $cat)
+                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('category_id') <div class="err">{{ $message }}</div> @enderror
+                </div>
+                <div class="field">
+                    <label>Priority</label>
+                    <select name="priority" required>
+                        <option value="low">Low (5 pts) 🌙</option>
+                        <option value="medium" selected>Medium (10 pts) ⭐</option>
+                        <option value="high">High (20 pts) ✦</option>
+                    </select>
+                    @error('priority') <div class="err">{{ $message }}</div> @enderror
                 </div>
                 <div class="field">
                     <label>Status</label>
                     <select name="status">
-                        <option value="pending">Pending 🌙</option>
+                        <option value="pending" selected>Pending 🌙</option>
                         <option value="in_progress">In Progress ⭐</option>
                         <option value="completed">Completed ✦</option>
                     </select>
                     @error('status') <div class="err">{{ $message }}</div> @enderror
+                </div>
+                <div class="field">
+                    <label>Due Date</label>
+                    <input type="date" name="due_date" />
+                    @error('due_date') <div class="err">{{ $message }}</div> @enderror
                 </div>
             </div>
             <div class="modal-footer">
@@ -490,48 +565,47 @@
     </div>
 </div>
 
-{{-- Edit User --}}
-<div id="editUserModal-{{ $user->id }}" class="modal-overlay">
+{{-- Edit Subject --}}
+<div id="editSubjectModal-{{ $subject->id }}" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
-            <span class="modal-title">Edit User ✦</span>
-            <button class="modal-close" onclick="toggleModal('editUserModal-{{ $user->id }}')">&times;</button>
+            <span class="modal-title">Edit Subject ✦</span>
+            <button class="modal-close" onclick="toggleModal('editSubjectModal-{{ $subject->id }}')">&times;</button>
         </div>
-        <form action="{{ url('/users/' . $user->id) }}" method="POST">
+        <form action="{{ route('subjects.update', $subject->id) }}" method="POST">
             @csrf
             @method('PUT')
             <div class="modal-body">
                 <div class="field">
-                    <label>Name</label>
-                    <input type="text" name="name" value="{{ $user->name }}" />
+                    <label>Subject Name</label>
+                    <input type="text" name="name" value="{{ $subject->name }}" required />
                     @error('name') <div class="err">{{ $message }}</div> @enderror
                 </div>
                 <div class="field">
-                    <label>Email</label>
-                    <input type="email" name="email" value="{{ $user->email }}" />
-                    @error('email') <div class="err">{{ $message }}</div> @enderror
+                    <label>Color</label>
+                    <input type="color" name="color" value="{{ $subject->color ?? '#8e7dff' }}" style="height:42px;padding:3px;cursor:pointer;" />
+                    @error('color') <div class="err">{{ $message }}</div> @enderror
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-blue btn-full">Update User ✦</button>
+                <button type="submit" class="btn btn-blue btn-full">Update Subject ✦</button>
             </div>
         </form>
     </div>
 </div>
 
-{{-- Delete User --}}
-<div id="deleteModal-{{ $user->id }}" class="modal-overlay">
+{{-- Delete Subject --}}
+<div id="deleteSubjectModal-{{ $subject->id }}" class="modal-overlay">
     <div class="modal">
         <div class="modal-body" style="padding-top:2rem;">
             <div class="delete-icon">🌑</div>
             <div class="delete-text">
-                Delete <strong>{{ $user->name }}</strong>?<br>
-                This will also remove all their tasks.
+                Delete subject <strong>{{ $subject->name }}</strong>?<br>
+                This will also remove all its tasks.
             </div>
             <div class="delete-actions">
-                <button type="button" onclick="toggleModal('deleteModal-{{ $user->id }}')"
-                    class="btn btn-success">Cancel</button>
-                <form action="{{ url('/users/' . $user->id) }}" method="POST" style="flex:1;">
+                <button type="button" onclick="toggleModal('deleteSubjectModal-{{ $subject->id }}')" class="btn btn-success">Cancel</button>
+                <form action="{{ route('subjects.destroy', $subject->id) }}" method="POST" style="flex:1;">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-danger" style="width:100%;justify-content:center;">
                         Delete ✦
@@ -542,22 +616,20 @@
     </div>
 </div>
 
-{{-- Task modals --}}
-@foreach ($user->tasks as $task)
-
 {{-- Edit Task --}}
+@foreach ($subject->tasks as $task)
 <div id="editTaskModal-{{ $task->id }}" class="modal-overlay">
     <div class="modal">
         <div class="modal-header">
             <span class="modal-title">Edit Task ✦</span>
             <button class="modal-close" onclick="toggleModal('editTaskModal-{{ $task->id }}')">&times;</button>
         </div>
-        <form action="{{ url('/tasks/' . $task->id) }}" method="POST">
+        <form action="{{ route('tasks.update', $task->id) }}" method="POST">
             @csrf @method('PUT')
             <div class="modal-body">
                 <div class="field">
                     <label>Title</label>
-                    <input type="text" name="title" value="{{ $task->title }}" />
+                    <input type="text" name="title" value="{{ $task->title }}" required />
                     @error('title') <div class="err">{{ $message }}</div> @enderror
                 </div>
                 <div class="field">
@@ -566,9 +638,23 @@
                     @error('description') <div class="err">{{ $message }}</div> @enderror
                 </div>
                 <div class="field">
-                    <label>Due Date</label>
-                    <input type="date" name="due_date" value="{{ $task->due_date }}" />
-                    @error('due_date') <div class="err">{{ $message }}</div> @enderror
+                    <label>Category</label>
+                    <select name="category_id">
+                        <option value="">— None —</option>
+                        @foreach ($categories as $cat)
+                        <option value="{{ $cat->id }}" {{ $task->category_id === $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('category_id') <div class="err">{{ $message }}</div> @enderror
+                </div>
+                <div class="field">
+                    <label>Priority</label>
+                    <select name="priority">
+                        <option value="low"    {{ $task->priority === 'low'    ? 'selected' : '' }}>Low (5 pts) 🌙</option>
+                        <option value="medium" {{ $task->priority === 'medium' ? 'selected' : '' }}>Medium (10 pts) ⭐</option>
+                        <option value="high"   {{ $task->priority === 'high'   ? 'selected' : '' }}>High (20 pts) ✦</option>
+                    </select>
+                    @error('priority') <div class="err">{{ $message }}</div> @enderror
                 </div>
                 <div class="field">
                     <label>Status</label>
@@ -578,6 +664,11 @@
                         <option value="completed"   {{ $task->status === 'completed'   ? 'selected' : '' }}>Completed ✦</option>
                     </select>
                     @error('status') <div class="err">{{ $message }}</div> @enderror
+                </div>
+                <div class="field">
+                    <label>Due Date</label>
+                    <input type="date" name="due_date" value="{{ $task->due_date ? $task->due_date->format('Y-m-d') : '' }}" />
+                    @error('due_date') <div class="err">{{ $message }}</div> @enderror
                 </div>
             </div>
             <div class="modal-footer">
@@ -600,7 +691,7 @@
                 <button type="button"
                     onclick="toggleModal('deleteTaskModal-{{ $task->id }}'); toggleModal('editTaskModal-{{ $task->id }}')"
                     class="btn btn-success">Cancel</button>
-                <form action="{{ url('/tasks/' . $task->id) }}" method="POST" style="flex:1;">
+                <form action="{{ route('tasks.destroy', $task->id) }}" method="POST" style="flex:1;">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-danger" style="width:100%;justify-content:center;">
                         Delete ✦
@@ -610,7 +701,6 @@
         </div>
     </div>
 </div>
-
 @endforeach
 @endforeach
 
@@ -627,13 +717,6 @@
             if (e.target === this) this.classList.remove('active');
         });
     });
-
-    if (document.getElementById('search-table') && typeof simpleDatatables !== 'undefined' && typeof simpleDatatables.DataTable !== 'undefined') {
-        new simpleDatatables.DataTable('#search-table', {
-            searchable: true,
-            sortable: true,
-            perPage: 10,
-        });
-    }
 </script>
+
 @endsection

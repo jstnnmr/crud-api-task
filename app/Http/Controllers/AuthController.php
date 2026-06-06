@@ -7,6 +7,8 @@ use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth; 
+
 
 class AuthController extends Controller
 {
@@ -68,5 +70,13 @@ class AuthController extends Controller
 
         // Otherwise, return JSON (for mobile/Postman)
         return response()->json($result, $result->status);
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/login');
     }
 }

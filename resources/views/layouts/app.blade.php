@@ -8,19 +8,19 @@
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3/dist/umd/simple-datatables.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     @stack('styles')
-    <title>@yield('title', 'Lumina Tasks ✦')</title>
+    <title>@yield('title', 'EaseTask ✦')</title>
 </head>
 <body>
 
 <nav class="gnav">
     <a class="gnav-logo" href="{{ url('/') }}">
         <span class="gnav-moon">🌙</span>
-        Lumina Tasks
+        EaseTask
     </a>
 
     <div class="gnav-links">
-        <a href="{{ url('/users') }}" class="gnav-link {{ request()->is('users*') ? 'gnav-link--active' : '' }}">
-            Dashboard
+        <a href="{{ route('subjects.data') }}" class="gnav-link {{ request()->is('/') || request()->is('data') ? 'gnav-link--active' : '' }}">
+            Subjects
         </a>
         <a href="#" class="gnav-link">My Tasks</a>
         <a href="#" class="gnav-link">Team</a>

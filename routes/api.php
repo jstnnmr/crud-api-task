@@ -1,19 +1,27 @@
 <?php
+// routes/api.php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UsersController;
+use App\Http\Controllers\SubjectController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TaskController;
 
-// Public API routes
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-
-// Protected API routes (Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('users', UsersController::class);
-    Route::apiResource('tasks', TaskController::class);
-    
-    // Custom Task completion
-    Route::patch('/tasks/{id}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
+
+    // Subjects
+    Route::apiResource('subjects', SubjectController::class)->names('api.subjects');
+
+    // Categories
+    Route::apiResource('categories', CategoryController::class)->names('api.categories');
+
+    // Tasks
+    Route::apiResource('tasks', TaskController::class)->names('api.tasks');
+    Route::patch('tasks/{id}/complete', [TaskController::class, 'complete']);
+
+    // User stats
+    Route::get('me/stats', fn() => response()->json([
+        'total_points' => auth()->user()->total_points,
+        'tasks_completed' => auth()->user()->tasks()->where('status', 'completed')->count(),
+        'tasks_pending' => auth()->user()->tasks()->where('status', 'pending')->count(),
+    ]));
 });
