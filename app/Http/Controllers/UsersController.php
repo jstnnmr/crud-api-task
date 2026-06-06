@@ -299,4 +299,12 @@ class UsersController extends Controller
         }
         return redirect()->route('users.index')->with('success', 'User deleted successfully');
     }
+
+    public function dataView()
+    {
+        $users = \App\Models\User::with('tasks')->get();
+        
+        // Ensure you have a file at resources/views/users/data.blade.php
+        return view('users.data', compact('users'));
+    }
 }

@@ -1,33 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 
-use App\Http\Controllers\UsersController;
-use App\Http\Controllers\TaskController;
+// Web UI for Authentication
+Route::get('/register', [AuthController::class, 'showRegister']);
+Route::post('/register', [AuthController::class, 'register']);
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
 
-Route::resource('/users', UsersController::class)->except(['create', 'edit']);
-Route::resource('/tasks', TaskController::class)->except(['create', 'edit']); 
-
-
+// Dashboard / Data views
 Route::get('/', function () {
-    return response()->json([
-        'message' => 'Welcome to the CRUD API Task',
-        'endpoints' => [
-            'GET /users' => 'List all users',
-            'POST /users' => 'Create a new user',
-            'GET /users/{id}' => 'Get a specific user',
-            'PUT /users/{id}' => 'Update a specific user',  
-            'DELETE /users/{id}' => 'Delete a specific user',
-            'GET /tasks' => 'List all tasks',
-            'POST /tasks' => 'Create a new task',
-            'GET /tasks/{id}' => 'Get a specific task', 
-            'PUT /tasks/{id}' => 'Update a specific task',
-            'DELETE /tasks/{id}' => 'Delete a specific task',
-        ]
-    ]);        
+    return view('welcome'); // Or your dashboard view
 });
 
-Route::get('/data', function () {
-    $users = \App\Models\User::with('tasks')->get();
-    return view('users.data', compact('users')); 
-});
+Route::get('/data', [App\Http\Controllers\UsersController::class, 'dataView']);

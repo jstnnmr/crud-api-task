@@ -2,6 +2,8 @@
 
 namespace App\Services;
 use App\Repositories\TaskRepository;
+use App\Models\Transaction; // <--- ADD THIS
+use Illuminate\Support\Facades\DB; // <--- ADD THIS
 
 class TaskService
 {
@@ -35,5 +37,31 @@ class TaskService
     public function getAllTasks()
     {
         return $this->taskRepository->getAll();
+    }
+
+    public function completeTask(int $id)
+    {
+        return DB::transaction(function () use ($id) {
+            $task = $this->taskRepository->findById($id);
+
+            // 1. Update status via repository
+            $this->taskRepository->update($id, [
+                'status' => 'completed',
+                'completed_at' => now(),
+            ]);
+
+            // 2. Add transaction record
+            Transaction::create([
+                'user_id' => $task->child_id,
+                'amount' => $task->coins_earned,
+                'description' => "Completed task: {$task->title}",
+                'type' => 'earning',
+            ]);
+
+            // 3. Update child's balance
+            $task->child->increment('coin_balance', $task->coins_earned);
+
+            return $task;
+        });
     }
 }
