@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Sign In | EaseTask')
+@section('title', 'Forgot Password | EaseTask')
 
 @push('styles')
 <style>
@@ -56,6 +56,16 @@
         margin-bottom: 1rem;
         text-align: center;
     }
+    .auth-success {
+        background: rgba(75,200,138,0.1);
+        border: 1px solid rgba(75,200,138,0.3);
+        color: var(--accent);
+        padding: 0.6rem 1rem;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
     .auth-footer {
         text-align: center;
         margin-top: 1.25rem;
@@ -79,34 +89,33 @@
 
     <div class="auth-card">
         <div class="auth-header">
-            <span class="auth-icon">🌙</span>
-            <h2 class="auth-title">Welcome back</h2>
-            <p class="auth-sub">Sign in to your galaxy ✦</p>
+            <span class="auth-icon">🔐</span>
+            <h2 class="auth-title">Forgot password?</h2>
+            <p class="auth-sub">We'll send you a reset link ✦</p>
         </div>
 
-        @if($errors->any())
+        @if ($errors->any())
         <div class="auth-alert">
             {{ $errors->first() }}
         </div>
         @endif
 
-        <form action="/login" method="POST">
+        @if (session('status'))
+        <div class="auth-success">
+            {{ session('status') }}
+        </div>
+        @endif
+
+        <form action="/forgot-password" method="POST">
             @csrf
             <div class="field">
                 <label>Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" placeholder="you@gmail.io" required>
+                <input type="email" name="email" value="{{ old('email') }}" placeholder="you@cosmos.io" required>
             </div>
-            <div class="field">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">Sign In ✦</button>
+            <button type="submit" class="btn btn-primary btn-full">Send Reset Link ✦</button>
         </form>
 
-        <p class="auth-footer">
-            <a href="/forgot-password">Forgot password?</a> &middot;
-            No account? <a href="/register">Create one</a>
-        </p>
+        <p class="auth-footer">Remember your password? <a href="/login">Sign in</a></p>
     </div>
 
 </div>

@@ -67,12 +67,7 @@
         text-decoration: none;
     }
     .auth-footer a:hover { text-decoration: underline; }
-    .field input::placeholder { color: var(--text-muted); opacity: 0.6; }
-    .field input:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(142,125,255,0.15);
-    }
+    .field input::placeholder { color: var(--text-muted); opacity: 0.5; }
 </style>
 @endpush
 
@@ -107,17 +102,13 @@
             </div>
             <div class="field">
                 <label>Password</label>
-                <input type="password" name="password" placeholder="••••••••" required>
+                <input type="password" name="password" placeholder="Min. 8 chars with a number" required>
             </div>
             <div class="field">
-                <label>Role</label>
-                <select name="role">
-                    <option value="">— Select Role —</option>
-                    <option value="parent" {{ old('role') === 'parent' ? 'selected' : '' }}>Parent 🌙</option>
-                    <option value="child"  {{ old('role') === 'child'  ? 'selected' : '' }}>Child ⭐</option>
-                </select>
+                <label>Confirm Password</label>
+                <input type="password" name="password_confirmation" placeholder="Repeat password" required>
             </div>
-            <button type="submit" class="btn-full">Create Account ✦</button>
+            <button type="submit" class="btn btn-primary btn-full">Create Account ✦</button>
         </form>
 
         <p class="auth-footer">Already have an account? <a href="/login">Sign in</a></p>

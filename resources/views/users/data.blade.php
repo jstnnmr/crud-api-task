@@ -52,58 +52,13 @@
         opacity: 0.7;
     }
 
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-family: 'DM Sans', sans-serif;
-        font-size: 0.77rem;
-        font-weight: 500;
-        border-radius: 999px;
-        border: none;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        padding: 0.5rem 1.2rem;
-        text-decoration: none;
-        white-space: nowrap;
-    }
-    .btn-primary {
-        background: var(--accent);
-        color: #fff;
-        box-shadow: 0 2px 12px rgba(142,125,255,0.3);
-    }
-    .btn-primary:hover {
-        opacity: 0.88;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 18px rgba(142,125,255,0.4);
-    }
-    .btn-success {
-        background: rgba(110,231,183,0.12);
-        color: #6ee7b7;
-        border: 1px solid rgba(110,231,183,0.25);
-    }
-    .btn-success:hover { background: rgba(110,231,183,0.2); }
     .btn-blue {
         background: rgba(129,140,248,0.12);
         color: #818cf8;
         border: 1px solid rgba(129,140,248,0.25);
     }
     .btn-blue:hover { background: rgba(129,140,248,0.2); }
-    .btn-danger {
-        background: rgba(248,113,113,0.1);
-        color: #f87171;
-        border: 1px solid rgba(248,113,113,0.25);
-    }
-    .btn-danger:hover { background: rgba(248,113,113,0.2); }
-    .btn-ghost {
-        background: transparent;
-        color: var(--text-muted);
-        border: 1px solid var(--border);
-    }
-    .btn-ghost:hover { background: var(--surface2); color: var(--text); }
-    .btn-sm { padding: 0.28rem 0.75rem; font-size: 0.68rem; }
-    .btn-xs { padding: 0.2rem 0.55rem; font-size: 0.62rem; }
-    .btn-full { width: 100%; justify-content: center; padding: 0.63rem 1rem; font-size: 0.8rem; border-radius: 12px; }
+    .btn-xs { padding: 0.2rem 0.55rem; font-size: 0.62rem; min-height: 30px; }
 
     .card {
         background: var(--surface);
@@ -424,6 +379,12 @@
                     </td>
                     <td style="text-align:right;">
                         <div class="actions" style="display:flex;gap:0.3rem;justify-content:flex-end;">
+                            @if ($task->status !== 'completed')
+                            <form action="{{ route('tasks.complete', $task->id) }}" method="POST" style="display:inline;" onsubmit="triggerConfetti()">
+                                @csrf @method('PATCH')
+                                <button type="submit" class="btn btn-success btn-xs">✔ Done</button>
+                            </form>
+                            @endif
                             <button onclick="toggleModal('editTaskModal-{{ $task->id }}')" class="btn btn-blue btn-xs">Edit</button>
                             <button onclick="toggleModal('deleteTaskModal-{{ $task->id }}')" class="btn btn-danger btn-xs">Del</button>
                         </div>

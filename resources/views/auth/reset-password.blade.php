@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Sign In | EaseTask')
+@section('title', 'Reset Password | EaseTask')
 
 @push('styles')
 <style>
@@ -79,9 +79,9 @@
 
     <div class="auth-card">
         <div class="auth-header">
-            <span class="auth-icon">🌙</span>
-            <h2 class="auth-title">Welcome back</h2>
-            <p class="auth-sub">Sign in to your galaxy ✦</p>
+            <span class="auth-icon">✨</span>
+            <h2 class="auth-title">Set new password</h2>
+            <p class="auth-sub">Choose a strong password ✦</p>
         </div>
 
         @if($errors->any())
@@ -90,23 +90,25 @@
         </div>
         @endif
 
-        <form action="/login" method="POST">
+        <form action="/reset-password" method="POST">
             @csrf
+            <input type="hidden" name="token" value="{{ $token }}">
             <div class="field">
                 <label>Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" placeholder="you@gmail.io" required>
+                <input type="email" name="email" value="{{ old('email') }}" placeholder="you@cosmos.io" required>
             </div>
             <div class="field">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">Sign In ✦</button>
+                    <label>New Password</label>
+                    <input type="password" name="password" placeholder="Min. 8 chars with a number" required>
+                </div>
+                <div class="field">
+                    <label>Confirm Password</label>
+                    <input type="password" name="password_confirmation" placeholder="Repeat password" required>
+                </div>
+            <button type="submit" class="btn btn-primary btn-full">Reset Password ✦</button>
         </form>
 
-        <p class="auth-footer">
-            <a href="/forgot-password">Forgot password?</a> &middot;
-            No account? <a href="/register">Create one</a>
-        </p>
+        <p class="auth-footer">Remember your password? <a href="/login">Sign in</a></p>
     </div>
 
 </div>

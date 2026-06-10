@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'Sign In | EaseTask')
+@section('title', 'Verify Email | EaseTask')
 
 @push('styles')
 <style>
@@ -35,11 +35,6 @@
         display: block;
         font-size: 2.2rem;
         margin-bottom: 0.6rem;
-        animation: moonFloat 4s ease-in-out infinite;
-    }
-    @keyframes moonFloat {
-        0%, 100% { transform: translateY(0) rotate(-5deg); }
-        50%       { transform: translateY(-3px) rotate(5deg); }
     }
     .auth-sub {
         font-size: 0.75rem;
@@ -50,6 +45,16 @@
         background: rgba(255,117,160,0.1);
         border: 1px solid rgba(255,117,160,0.3);
         color: var(--rose-deep);
+        padding: 0.6rem 1rem;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    .auth-success {
+        background: rgba(110,231,183,0.1);
+        border: 1px solid rgba(110,231,183,0.25);
+        color: #6ee7b7;
         padding: 0.6rem 1rem;
         border-radius: 10px;
         font-size: 0.75rem;
@@ -68,6 +73,12 @@
     }
     .auth-footer a:hover { text-decoration: underline; }
     .field input::placeholder { color: var(--text-muted); opacity: 0.5; }
+    .code-input {
+        font-size: 1.5rem;
+        letter-spacing: 0.5em;
+        text-align: center;
+        font-weight: 700;
+    }
 </style>
 @endpush
 
@@ -79,34 +90,42 @@
 
     <div class="auth-card">
         <div class="auth-header">
-            <span class="auth-icon">🌙</span>
-            <h2 class="auth-title">Welcome back</h2>
-            <p class="auth-sub">Sign in to your galaxy ✦</p>
+            <span class="auth-icon">📬</span>
+            <h2 class="auth-title">Check your email</h2>
+            <p class="auth-sub">We sent a 6-digit code to {{ $email }} ✦</p>
         </div>
 
-        @if($errors->any())
+        @if ($errors->any())
         <div class="auth-alert">
             {{ $errors->first() }}
         </div>
         @endif
 
-        <form action="/login" method="POST">
+        @if (session('status'))
+        <div class="auth-success">
+            {{ session('status') }} ✨
+        </div>
+        @endif
+
+        <form action="/verify-email" method="POST">
             @csrf
+            <input type="hidden" name="email" value="{{ $email }}">
             <div class="field">
-                <label>Email</label>
-                <input type="email" name="email" value="{{ old('email') }}" placeholder="you@gmail.io" required>
+                <label>Verification Code</label>
+                <input type="text" name="code" class="code-input" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" required>
             </div>
-            <div class="field">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">Sign In ✦</button>
+            <button type="submit" class="btn btn-primary btn-full">Verify Email ✦</button>
         </form>
 
         <p class="auth-footer">
-            <a href="/forgot-password">Forgot password?</a> &middot;
-            No account? <a href="/register">Create one</a>
+            Didn't get it?
+            <a href="#" onclick="event.preventDefault(); document.getElementById('resend-form').submit();">Resend code</a>
         </p>
+
+        <form id="resend-form" action="/verify-email/resend" method="POST" style="display:none;">
+            @csrf
+            <input type="hidden" name="email" value="{{ $email }}">
+        </form>
     </div>
 
 </div>

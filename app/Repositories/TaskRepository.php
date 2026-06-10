@@ -16,6 +16,14 @@ class TaskRepository
 
     public function findByIdAndUser(int $id, int $userId): ?Task
     {
+        return Task::where(function ($q) use ($userId) {
+            $q->whereHas('subject', fn($sq) => $sq->where('user_id', $userId))
+              ->orWhereHas('collaborators', fn($cq) => $cq->where('user_id', $userId));
+        })->where('id', $id)->first();
+    }
+
+    public function findOwnedById(int $id, int $userId): ?Task
+    {
         return Task::whereHas('subject', fn($q) => $q->where('user_id', $userId))
             ->where('id', $id)
             ->first();

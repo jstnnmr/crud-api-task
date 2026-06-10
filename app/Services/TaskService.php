@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\Category;
+use App\Models\TaskActivity;
 use App\Repositories\TaskRepository;
 use App\Support\ServiceReturn;
 use Carbon\Carbon;
@@ -42,6 +43,13 @@ class TaskService
         unset($data['category_name']);
 
         $task = $this->taskRepository->create(data: $data);
+
+        TaskActivity::create([
+            'task_id' => $task->id,
+            'user_id' => $userId,
+            'action'  => 'created',
+        ]);
+
         return ServiceReturn::success(data: $task, status: 201);
     }
 
@@ -51,6 +59,8 @@ class TaskService
         if (!$task) {
             return ServiceReturn::error(message: 'Task not found', status: 404);
         }
+
+        $original = $task->toArray();
 
         // Resolve category
         $data['category_id'] = $this->resolveCategory(
@@ -69,12 +79,26 @@ class TaskService
         }
 
         $task = $this->taskRepository->update(id: $id, data: $data);
+
+        $changes = collect($data)->only(['title', 'description', 'priority', 'status', 'due_date', 'category_id'])
+            ->filter(fn($val, $key) => $original[$key] ?? null !== $val)
+            ->toArray();
+
+        if (!empty($changes)) {
+            TaskActivity::create([
+                'task_id' => $task->id,
+                'user_id' => $userId,
+                'action'  => 'updated',
+                'changes' => $changes,
+            ]);
+        }
+
         return ServiceReturn::success(data: $task);
     }
 
     public function deleteTask(int $id, int $userId): ServiceReturn
     {
-        $task = $this->taskRepository->findByIdAndUser(id: $id, userId: $userId);
+        $task = $this->taskRepository->findOwnedById(id: $id, userId: $userId);
         if (!$task) {
             return ServiceReturn::error(message: 'Task not found', status: 404);
         }
@@ -108,6 +132,12 @@ class TaskService
         ]);
 
         User::where('id', $userId)->increment('total_points', $points);
+
+        TaskActivity::create([
+            'task_id' => $task->id,
+            'user_id' => $userId,
+            'action'  => 'completed',
+        ]);
 
         return ServiceReturn::success(
             data: ['task' => $task, 'points_earned' => $points],
