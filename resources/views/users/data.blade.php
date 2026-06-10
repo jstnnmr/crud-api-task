@@ -290,6 +290,24 @@
         flex: 1; justify-content: center;
         padding: 0.6rem; font-size: 0.78rem; border-radius: 12px;
     }
+
+    @media (max-width: 640px) {
+        .container { padding: 1rem; }
+        .page-header { flex-direction: column; align-items: stretch; gap: .75rem; }
+        .page-title { font-size: 1.3rem; }
+        .subject-header { flex-wrap: wrap; padding: .75rem 1rem; gap: .5rem; }
+        .subject-header .btn-xs { font-size: .55rem; padding: .15rem .4rem; min-height: 26px; }
+        .subject-actions { gap: .2rem; }
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .task-table { min-width: 550px; }
+        .task-table th { padding: .5rem .75rem; }
+        .task-table td { padding: .55rem .75rem; }
+        .subjects-grid { gap: 1rem; }
+    }
+    @media (min-width: 641px) and (max-width: 1024px) {
+        .task-table th { padding: .5rem .85rem; }
+        .task-table td { padding: .55rem .85rem; }
+    }
 </style>
 @endpush
 
@@ -339,6 +357,7 @@
         </div>
 
         @if ($subject->tasks->isNotEmpty())
+        <div class="table-wrap">
         <table class="task-table">
             <thead>
                 <tr>
@@ -393,6 +412,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
         @else
         <div class="no-tasks">No tasks yet. Add one ✨</div>
         @endif

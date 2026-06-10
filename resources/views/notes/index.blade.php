@@ -33,12 +33,23 @@
     .sticky-actions .btn-xs:hover { background: rgba(0,0,0,.3); }
     .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
     .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
-    .ql-editor { min-height: 250px; font-size: .9rem; }
+    .ql-editor { min-height: 200px; font-size: .9rem; }
     .ql-toolbar { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
     .ql-container { border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
     .color-picker { display: flex; gap: .5rem; flex-wrap: wrap; }
     .color-swatch { width: 36px; height: 36px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: border-color .15s; }
     .color-swatch:hover, .color-swatch.active { border-color: var(--accent); }
+
+    @media (max-width: 640px) {
+        .container { padding: 1rem; }
+        .notes-grid { grid-template-columns: 1fr; gap: 1rem; }
+        .sticky { min-height: 160px; padding: 1rem; }
+        .sticky-title { font-size: .85rem; }
+        .sticky-preview { font-size: .72rem; }
+        .sticky-footer { flex-direction: column; gap: .35rem; align-items: flex-start; }
+        .ql-editor { min-height: 160px; font-size: .82rem; }
+        .color-swatch { width: 32px; height: 32px; }
+    }
 </style>
 @endpush
 
@@ -147,6 +158,7 @@
 <script>
 let quill = null;
 let currentNoteId = null;
+const notesData = @json($notes);
 
 function initQuill() {
     if (quill) return;
@@ -190,21 +202,18 @@ function openNoteModal(id) {
             method.value = 'PUT';
             form.action = '/notes/' + id;
 
-            fetch('/api/notes/' + id)
-                .then(function(r) { return r.json(); })
-                .then(function(res) {
-                    if (res.success) {
-                        var note = res.data;
-                        noteTitle.value = note.title;
-                        if (quill) quill.root.innerHTML = note.content || '';
-                        selectSwatch(note.color || '#fff9c4');
-                        document.getElementById('collabSection').style.display = 'block';
-                        renderCollabs(note.collaborators || []);
-                    }
-                })
-                .catch(function(err) {
-                    console.error('Failed to load note', err);
-                });
+            var note = null;
+            for (var i = 0; i < notesData.length; i++) {
+                if (notesData[i].id === id) { note = notesData[i]; break; }
+            }
+
+            if (note) {
+                noteTitle.value = note.title;
+                if (quill) quill.root.innerHTML = note.content || '';
+                selectSwatch(note.color || '#fff9c4');
+                document.getElementById('collabSection').style.display = 'block';
+                renderCollabs(note.collaborators || []);
+            }
         } else {
             title.textContent = '✦ New Note';
             method.value = 'POST';
@@ -255,10 +264,7 @@ function inviteCollab() {
         body: JSON.stringify({ invited_email: email })
     }).then(r => r.json()).then(res => {
         if (res.success) {
-            document.getElementById('inviteEmail').value = '';
-            fetch('/api/notes/' + currentNoteId).then(r => r.json()).then(r => {
-                if (r.success) renderCollabs(r.data.collaborators || []);
-            });
+            window.location.reload();
         } else {
             alert(res.message);
         }
@@ -272,9 +278,7 @@ function removeCollab(userId) {
         headers: { 'X-CSRF-TOKEN': document.querySelector('[name=_token]').value }
     }).then(r => r.json()).then(res => {
         if (res.success) {
-            fetch('/api/notes/' + currentNoteId).then(r => r.json()).then(r => {
-                if (r.success) renderCollabs(r.data.collaborators || []);
-            });
+            window.location.reload();
         }
     });
 }

@@ -318,10 +318,29 @@
 
     @media (max-width: 640px) {
         .container { padding: 1rem; }
+        .page-title { font-size: 1.3rem; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); gap: .6rem; }
+        .stat-card { padding: .85rem; }
+        .stat-value { font-size: 1.2rem; }
         .honor-card { padding: 1.25rem; flex-direction: column; gap: 0.75rem; }
+        .honor-icon { font-size: 1.6rem; }
+        .honor-title { font-size: .9rem; }
+        .honor-message { font-size: .75rem; }
+        .calendar-wrap { padding: 1rem; }
+        .calendar-title { font-size: .95rem; }
         .cal-day { min-height: 36px; }
+        .cal-day-num { font-size: .65rem; }
         .cal-day-stats { font-size: 0.5rem; }
         .month-label { font-size: 0.75rem; min-width: 80px; }
+        .cal-summary { flex-direction: column; gap: .35rem; font-size: .72rem; }
+        .weekly-wrap { padding: 1rem; }
+        .weekly-title { font-size: .95rem; }
+        .weekly-label { font-size: .65rem; min-width: 60px; }
+        .weekly-stat { font-size: .65rem; min-width: 40px; }
+    }
+    @media (min-width: 641px) and (max-width: 1024px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .cal-day { min-height: 42px; }
     }
 </style>
 @endpush

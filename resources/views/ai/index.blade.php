@@ -14,7 +14,7 @@
     .ai-empty svg { opacity: .4; margin-bottom: .75rem; }
     .ai-empty p { font-size: .9rem; margin-bottom: 1rem; color: var(--text); }
     .chip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; max-width: 360px; margin: 0 auto; }
-    .chip { padding: .5rem .75rem; font-size: .75rem; border-radius: 999px; border: 1px solid rgba(99,102,241,.3); color: #e2e8f0; background: rgba(99,102,241,.12); cursor: pointer; transition: background .15s; text-align: center; line-height: 1.3; }
+    .chip { padding: .5rem .75rem; font-size: .75rem; border-radius: 999px; border: 1px solid rgba(99,102,241,.3); color: var(--text); background: rgba(99,102,241,.12); cursor: pointer; transition: background .15s; text-align: center; line-height: 1.3; }
     .chip:hover { background: rgba(99,102,241,.25); }
     .msg-row { display: flex; }
     .msg-row.user { justify-content: flex-end; }
@@ -35,6 +35,18 @@
     .ai-input-row button:disabled { opacity: .4; cursor: default; }
     .ai-input-row button:not(:disabled):hover { opacity: .85; }
     .ai-error { text-align: center; padding: .75rem; background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.2); border-radius: 10px; font-size: .78rem; color: #f87171; margin-bottom: .5rem; flex-shrink: 0; }
+
+    @media (max-width: 640px) {
+        .ai-container { padding: 1rem; }
+        .ai-title { font-size: 1.15rem; }
+        .msg-bubble { max-width: 88%; font-size: .82rem; padding: .55rem .85rem; }
+        .chip-grid { grid-template-columns: 1fr; max-width: 100%; }
+        .ai-input-row { padding: .2rem .2rem .2rem .75rem; }
+        .ai-input-row input { font-size: .82rem; padding: .5rem 0; }
+    }
+    @media (min-width: 641px) and (max-width: 1024px) {
+        .ai-container { padding: 1.25rem 1.5rem 1.5rem; }
+    }
 </style>
 @endpush
 

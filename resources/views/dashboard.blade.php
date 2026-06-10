@@ -126,6 +126,19 @@
         font-style: italic;
         opacity: 0.6;
     }
+
+    @media (max-width: 640px) {
+        .container { padding: 1rem; }
+        .page-title { font-size: 1.3rem; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); gap: .6rem; }
+        .stat-card { padding: .85rem; }
+        .stat-value { font-size: 1.2rem; }
+        .section-title { font-size: .95rem; }
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .task-table { min-width: 500px; }
+        .task-table th { padding: .5rem .75rem; }
+        .task-table td { padding: .55rem .75rem; }
+    }
 </style>
 @endpush
 
@@ -161,6 +174,7 @@
     @if ($todayTasks->isNotEmpty())
     <div class="section-title">⏰ Today's Tasks</div>
     <div class="card">
+        <div class="table-wrap">
         <table class="task-table">
             <thead>
                 <tr>
@@ -188,6 +202,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
     @else
     <div class="section-title">⏰ Today's Tasks</div>

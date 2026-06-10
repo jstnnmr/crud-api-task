@@ -116,6 +116,19 @@
         color: var(--text-muted);
         opacity: 0.6;
     }
+
+    @media (max-width: 640px) {
+        .container { padding: 1rem; }
+        .page-title { font-size: 1.3rem; }
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .task-table { min-width: 600px; }
+        .task-table th { padding: .5rem .75rem; }
+        .task-table td { padding: .55rem .75rem; }
+    }
+    @media (min-width: 641px) and (max-width: 1024px) {
+        .task-table th { padding: .5rem 1rem; }
+        .task-table td { padding: .55rem 1rem; }
+    }
 </style>
 @endpush
 
@@ -130,6 +143,7 @@
     </div>
     @else
     <div class="card">
+        <div class="table-wrap">
         <table class="task-table">
             <thead>
                 <tr>
@@ -188,6 +202,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
     @endif
 </div>

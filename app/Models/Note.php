@@ -15,6 +15,13 @@ class Note extends Model
         'color',
     ];
 
+    public function getPreviewAttribute(): string
+{
+    return $this->content
+        ? str(strip_tags($this->content))->limit(120)->toString()
+        : 'Empty note';
+}
+
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
