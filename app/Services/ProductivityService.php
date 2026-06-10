@@ -15,6 +15,7 @@ class ProductivityService
 
         $dailyStats = Task::whereHas('subject', fn($q) => $q->where('user_id', $userId))
             ->where('status', 'completed')
+            ->whereNotNull('completed_at')
             ->whereBetween('completed_at', [$start, $end])
             ->selectRaw('DATE(completed_at) as date, COUNT(*) as tasks_count, COALESCE(SUM(points_earned), 0) as points')
             ->groupBy('date')
@@ -62,6 +63,7 @@ class ProductivityService
 
             $stats = Task::whereHas('subject', fn($q) => $q->where('user_id', $userId))
                 ->where('status', 'completed')
+                ->whereNotNull('completed_at')
                 ->whereBetween('completed_at', [$start, $end])
                 ->selectRaw('COUNT(*) as tasks_count, COALESCE(SUM(points_earned), 0) as points')
                 ->first();

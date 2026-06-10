@@ -182,6 +182,20 @@
         border-radius: 50%;
         margin-right: 0.3rem;
     }
+
+    @media (max-width: 640px) {
+        .container { padding: 1rem; }
+        .page-title { font-size: 1.3rem; }
+        .card-header { flex-wrap: wrap; gap: .5rem; }
+        .task-table th { padding: .4rem .6rem; font-size: .5rem; }
+        .task-table td { padding: .45rem .6rem; font-size: .65rem; }
+        .task-table td:nth-child(3) { display: none; }
+        .section-title { font-size: .9rem; }
+    }
+    @media (min-width: 641px) and (max-width: 1024px) {
+        .task-table th { padding: .5rem .85rem; }
+        .task-table td { padding: .55rem .85rem; }
+    }
 </style>
 @endpush
 

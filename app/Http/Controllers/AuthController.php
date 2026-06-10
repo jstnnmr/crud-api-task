@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class AuthController extends Controller
 {
@@ -119,6 +121,33 @@ class AuthController extends Controller
         }
 
         return response()->json($result, $result->status);
+    }
+    public function apiLogin(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email'    => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $user = User::where('email', $validated['email'])->first();
+
+        if (!$user || !Hash::check($validated['password'], $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials',
+            ], 401);
+        }
+
+        $token = $user->createToken('api_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'user'  => $user,
+                'token' => $token,
+            ],
+            'message' => 'Login successful.',
+        ]);
     }
 
     public function logout(Request $request)

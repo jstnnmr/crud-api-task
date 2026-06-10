@@ -210,6 +210,16 @@
         text-align: center;
         font-weight: 700;
     }
+
+    @media (max-width: 640px) {
+        .container { padding: 1rem; }
+        .page-title { font-size: 1.3rem; }
+        .card-header { font-size: .85rem; padding: .75rem 1rem; }
+        .card-body { padding: 1rem; gap: .75rem; }
+    }
+    @media (min-width: 641px) and (max-width: 1024px) {
+        .container { max-width: 520px; }
+    }
 </style>
 @endpush
 

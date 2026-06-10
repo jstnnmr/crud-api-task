@@ -20,6 +20,10 @@
         EaseTask
     </a>
 
+    <button class="gnav-hamburger" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+    </button>
+
     <div class="gnav-links" role="menubar">
         <a href="{{ route('subjects.data') }}" class="gnav-link {{ request()->is('/') || request()->is('data') ? 'gnav-link--active' : '' }}" role="menuitem">
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
@@ -112,6 +116,31 @@
         0%, 100% { transform: translateY(0) rotate(-5deg); }
         50%       { transform: translateY(-3px) rotate(5deg); }
     }
+    .gnav-hamburger {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        width: 44px;
+        height: 44px;
+        padding: 10px;
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        margin-left: auto;
+    }
+    .gnav-hamburger span {
+        display: block;
+        width: 100%;
+        height: 2px;
+        background: var(--text);
+        border-radius: 2px;
+        transition: transform .2s, opacity .2s;
+    }
+    .gnav.menu-open .gnav-hamburger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .gnav.menu-open .gnav-hamburger span:nth-child(2) { opacity: 0; }
+    .gnav.menu-open .gnav-hamburger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
     .gnav-links {
         display: flex;
         align-items: center;
@@ -169,12 +198,83 @@
         color: var(--accent);
         border-color: var(--accent);
     }
+    .gnav-divider {
+        display: none;
+        height: 1px;
+        background: var(--border);
+        margin: .5rem 0;
+    }
     @media (max-width: 640px) {
-        .gnav { padding: 0 .75rem; gap: .4rem; }
-        .gnav-links { gap: 0; }
-        .gnav-link { padding: .4rem .5rem; font-size: .72rem; }
-        .gnav-btn { padding: .35rem .6rem; font-size: .7rem; }
-        .gnav-text { display: none; }
+        .gnav { padding: 0 1rem; gap: .5rem; }
+        .gnav-hamburger { display: flex; }
+        .gnav-links {
+            display: none;
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0;
+            margin-left: 0;
+            padding: .75rem 1rem;
+            background: rgba(26, 22, 56, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            animation: menuSlide .2s ease;
+        }
+        .light-mode .gnav-links {
+            background: rgba(255, 255, 255, 0.96);
+        }
+        @keyframes menuSlide {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .gnav.menu-open .gnav-links { display: flex; }
+        .gnav-link {
+            padding: .75rem 1rem;
+            min-height: 44px;
+            border-radius: var(--radius-sm);
+            font-size: .85rem;
+        }
+        .gnav-link svg { width: 16px; height: 16px; }
+        .gnav-right { display: none; }
+        .gnav.menu-open .gnav-right {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: .35rem;
+            margin-left: 0;
+            padding: 0 1rem .75rem;
+            position: absolute;
+            top: calc(60px + var(--menu-links-height, 0px));
+            left: 0;
+            right: 0;
+            background: rgba(26, 22, 56, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+        .light-mode .gnav.menu-open .gnav-right {
+            background: rgba(255, 255, 255, 0.96);
+        }
+        .gnav.menu-open .gnav-right .gnav-btn {
+            justify-content: flex-start;
+            padding: .65rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: .85rem;
+        }
+        .gnav.menu-open .gnav-right .gnav-text { display: inline; }
+        .gnav.menu-open .gnav-right .gnav-divider { display: block; }
+        .gnav-logo { font-size: .95rem; }
+        .gnav-moon { font-size: 1.1rem; }
+    }
+    @media (min-width: 641px) and (max-width: 1024px) {
+        .gnav { padding: 0 1rem; gap: .5rem; }
+        .gnav-link { padding: .45rem .65rem; font-size: .74rem; }
+        .gnav-btn { padding: .35rem .75rem; font-size: .72rem; }
     }
 </style>
 
@@ -215,6 +315,30 @@ html.light-mode body {
         themeLabel.textContent = isLight ? 'Dark' : 'Light';
         localStorage.setItem('theme', isLight ? 'light' : 'dark');
     }
+
+    function toggleMobileMenu() {
+        const nav = document.querySelector('.gnav');
+        const isOpen = nav.classList.toggle('menu-open');
+        if (isOpen) {
+            const links = document.querySelector('.gnav-links');
+            const linksHeight = links.scrollHeight;
+            nav.style.setProperty('--menu-links-height', linksHeight + 'px');
+            document.querySelector('.gnav-right').style.top = (60 + linksHeight) + 'px';
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        const nav = document.querySelector('.gnav');
+        if (nav.classList.contains('menu-open') && !nav.contains(e.target)) {
+            nav.classList.remove('menu-open');
+        }
+    });
+
+    document.querySelectorAll('.gnav-link').forEach(function(link) {
+        link.addEventListener('click', function() {
+            document.querySelector('.gnav').classList.remove('menu-open');
+        });
+    });
 
     function triggerConfetti() {
         const colors = ['#8e7dff', '#ff75a0', '#6ee7b7', '#fbbf24', '#818cf8', '#f87171', '#f97316'];

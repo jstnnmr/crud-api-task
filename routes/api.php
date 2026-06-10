@@ -17,6 +17,7 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'reset']);
 
 // Email Verification (no auth required)
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'apiLogin']);
 Route::post('/verify-email', [AuthController::class, 'verify']);
 Route::post('/verify-email/resend', [AuthController::class, 'resendCode']);
 
