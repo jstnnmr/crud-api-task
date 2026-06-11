@@ -342,6 +342,19 @@
         .view-modal { max-width: 100%; }
         .view-detail-row { flex-direction: column; gap: 0.15rem; }
     }
+
+    @media (max-width: 640px) {
+        .container { padding: 1rem; }
+        .page-title { font-size: 1.3rem; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); gap: .6rem; }
+        .stat-card { padding: .85rem; }
+        .stat-value { font-size: 1.2rem; }
+        .section-title { font-size: .95rem; }
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .task-table { min-width: 500px; }
+        .task-table th { padding: .5rem .75rem; }
+        .task-table td { padding: .55rem .75rem; }
+    }
 </style>
 @endpush
 
