@@ -9,15 +9,16 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
-            $table->text('description')->nullable();
-            $table->enum('status', ['pending', 'in_progress', 'completed']);
-            $table->date('due_date')->nullable();
+            $table->foreignId('child_id')->constrained('users')->onDelete('cascade');
+            $table->integer('coins_earned')->default(0);
+            $table->string('status')->default('pending');
+            $table->timestamp('completed_at')->nullable();
             $table->timestamps();
         });
     }

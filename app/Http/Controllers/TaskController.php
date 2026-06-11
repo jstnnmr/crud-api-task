@@ -3,170 +3,150 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use App\Services\TaskService;
-use OpenApi\Attributes as OA;
 use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
-    protected $taskService;
+    public function __construct(
+        protected TaskService $taskService
+    ) {}
 
-    public function __construct(TaskService $taskService)
+    public function index(Request $request): JsonResponse|RedirectResponse
     {
-        $this->taskService = $taskService;
-    }
+        $result = $this->taskService->getAll(userId: auth()->id());
 
-    #[OA\Get(path: '/api/tasks', summary: 'Get all tasks', tags: ['Tasks'],
-        responses: [new OA\Response(response: 200, description: 'Success')]
-    )]
-    public function index()
-    {
-        $tasks = $this->taskService->getAllTasks();
-        if (request()->is('api/*') || request()->wantsJson()) {
-            return response()->json($tasks);
-        }
-        return redirect()->route('users.index');
-    }
-
-    #[OA\Get(path: '/api/tasks/{id}', summary: 'Get task by ID', tags: ['Tasks'],
-        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
-        responses: [
-            new OA\Response(response: 200, description: 'Success'),
-            new OA\Response(response: 404, description: 'Task not found')
-        ]
-    )]
-    public function show(Request $request, $id)
-    {
-        $task = $this->taskService->getTaskById($id);
-
-        //Check if task exists FIRST
-        if (!$task) {
-            if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Task not found'
-                ], 404);
-            }
-            return redirect()->route('users.index')->with('error', 'Task not found');
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'data' => $result->data]);
         }
 
-        //Task exists, return the data
-        if ($request->is('api/*') || $request->expectsJson()) {
+        return redirect()->route('dashboard');
+    }
+
+    public function show(Request $request, int $id): JsonResponse|RedirectResponse
+    {
+        $result = $this->taskService->getById(id: $id, userId: auth()->id());
+
+        if (!$result->success) {
+            if ($request->wantsJson()) return response()->json(['message' => $result->message], $result->status);
+            return redirect()->route('dashboard')->with('error', $result->message);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'data' => $result->data]);
+        }
+
+        return redirect()->route('dashboard');
+    }
+
+    public function store(Request $request): JsonResponse|RedirectResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'subject_id'    => 'required|exists:subjects,id',
+            'category_id'   => 'nullable|exists:categories,id',
+            'category_name' => 'nullable|string|max:255',
+            'title'         => 'required|string|max:255',
+            'description'   => 'nullable|string',
+            'priority'      => 'required|in:low,medium,high',
+            'status'        => 'required|in:pending,in_progress,completed',
+            'due_date'      => 'nullable|date',
+        ]);
+
+        if ($validator->fails()) {
+            if ($request->wantsJson()) return response()->json(['errors' => $validator->errors()], 422);
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        // Verify subject belongs to auth user
+        $subject = auth()->user()->subjects()->find($request->subject_id);
+        if (!$subject) {
+            if ($request->wantsJson()) return response()->json(['message' => 'Unauthorized'], 403);
+            return redirect()->back()->with('error', 'Unauthorized');
+        }
+
+        $result = $this->taskService->createTask(
+            userId: auth()->id(),
+            data: $validator->validated()
+        );
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'data' => $result->data], 201);
+        }
+
+        return redirect()->route('subjects.data')->with('success', 'Task added!');
+    }
+
+    public function update(Request $request, int $id): JsonResponse|RedirectResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'category_id'   => 'nullable|exists:categories,id',
+            'category_name' => 'nullable|string|max:255',
+            'title'         => 'sometimes|string|max:255',
+            'description'   => 'nullable|string',
+            'priority'      => 'sometimes|in:low,medium,high',
+            'status'        => 'sometimes|in:pending,in_progress,completed',
+            'due_date'      => 'nullable|date',
+        ]);
+
+        if ($validator->fails()) {
+            if ($request->wantsJson()) return response()->json(['errors' => $validator->errors()], 422);
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $result = $this->taskService->updateTask(
+            id: $id,
+            userId: auth()->id(),
+            data: $validator->validated()
+        );
+
+        if (!$result->success) {
+            if ($request->wantsJson()) return response()->json(['message' => $result->message], $result->status);
+            return redirect()->back()->with('error', $result->message);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'data' => $result->data]);
+        }
+
+        return redirect()->route('subjects.data')->with('success', 'Task updated!');
+    }
+
+    public function destroy(Request $request, int $id): JsonResponse|RedirectResponse
+    {
+        $result = $this->taskService->deleteTask(id: $id, userId: auth()->id());
+
+        if (!$result->success) {
+            if ($request->wantsJson()) return response()->json(['message' => $result->message], $result->status);
+            return redirect()->back()->with('error', $result->message);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => $result->message]);
+        }
+
+        return redirect()->route('subjects.data')->with('success', 'Task deleted!');
+    }
+
+    public function complete(Request $request, int $id): JsonResponse|RedirectResponse
+    {
+        $result = $this->taskService->completeTask(id: $id, userId: auth()->id());
+
+        if (!$result->success) {
+            if ($request->wantsJson()) return response()->json(['message' => $result->message], $result->status);
+            return redirect()->back()->with('error', $result->message);
+        }
+
+        if ($request->wantsJson()) {
             return response()->json([
-                'success' => true,
-                'data' => $task
+                'success'       => true,
+                'message'       => $result->message,
+                'points_earned' => $result->data['points_earned'],
+                'data'          => $result->data['task'],
             ]);
         }
 
-        return view('tasks.show', compact('task'));
-    }
-
-    #[OA\Post(path: '/api/tasks', summary: 'Create a task', tags: ['Tasks'],
-        requestBody: new OA\RequestBody(
-            required: true,
-            content: new OA\JsonContent(
-                required: ['user_id', 'title', 'status'],
-                properties: [
-                    new OA\Property(property: 'user_id', type: 'integer', example: 1),
-                    new OA\Property(property: 'title', type: 'string', example: 'My Task'),
-                    new OA\Property(property: 'description', type: 'string', example: 'Task description'),
-                    new OA\Property(property: 'status', type: 'string', enum: ['pending', 'in_progress', 'completed'], example: 'pending'),
-                    new OA\Property(property: 'due_date', type: 'string', format: 'date', example: '2026-12-31'),
-                ]
-            )
-        ),
-        responses: [
-            new OA\Response(response: 201, description: 'Task created successfully'),
-            new OA\Response(response: 422, description: 'Validation error')
-        ]
-    )]
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'user_id'     => 'required|exists:users,id',
-            'title'       => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status'      => 'required|in:pending,in_progress,completed',
-            'due_date'    => 'nullable|date',
-        ]);
-        if ($validator->fails()) {
-            if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Validation failed',
-                    'errors'  => $validator->errors()
-                ], 422);
-            }
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-        $task = $this->taskService->createTask($validator->validated());
-        if ($request->is('api/*') || $request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Task created successfully',
-                'data'    => $task
-            ], 201);
-        }
-        return redirect()->route('users.index')->with('success', 'Task created successfully');
-    }
-
-    #[OA\Put(path: '/api/tasks/{id}', summary: 'Update a task', tags: ['Tasks'],
-        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
-        requestBody: new OA\RequestBody(
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'title', type: 'string', example: 'Updated Task'),
-                    new OA\Property(property: 'description', type: 'string', example: 'Updated description'),
-                    new OA\Property(property: 'status', type: 'string', enum: ['pending', 'in_progress', 'completed']),
-                    new OA\Property(property: 'due_date', type: 'string', format: 'date', example: '2026-12-31'),
-                ]
-            )
-        ),
-        responses: [
-            new OA\Response(response: 200, description: 'Task updated successfully'),
-            new OA\Response(response: 404, description: 'Task not found'),
-            new OA\Response(response: 422, description: 'Validation error')
-        ]
-    )]
-    public function update(Request $request, $id)
-    {   
-        $validated = $request->validate([
-            'title'       => 'sometimes|string|max:255',
-            'description' => 'nullable|string',
-            'status'      => 'sometimes|in:pending,in_progress,completed',
-            'due_date'    => 'nullable|date',
-        ]);
-
-        $task = $this->taskService->updateTask($id, $validated);
-        if (!$task) {
-            if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Task not found'
-                ], 404);
-            }
-            return redirect()->route('users.index')->with('error', 'Task not found');
-        }
-        if (request()->is('api/*') || request()->wantsJson()) {
-            return response()->json(['message' => 'Task updated successfully', 'data' => $task], 200);
-        }
-        return redirect()->route('users.index')->with('success', 'Task updated successfully');
-    }
-
-    #[OA\Delete(path: '/api/tasks/{id}', summary: 'Delete a task', tags: ['Tasks'],
-        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
-        responses: [
-            new OA\Response(response: 200, description: 'Task deleted successfully'),
-            new OA\Response(response: 404, description: 'Task not found')
-        ]
-    )]
-    public function destroy($id)
-    {
-        $this->taskService->deleteTask($id);
-
-        if (request()->is('api/*') || request()->wantsJson()) {
-            return response()->json(['message' => 'Task deleted successfully'], 200);
-        }
-        return redirect()->route('users.index')->with('success', 'Task deleted successfully');
+        return redirect()->back()->with(['success' => $result->message, 'confetti' => true]);
     }
 }

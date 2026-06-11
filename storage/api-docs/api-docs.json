@@ -305,7 +305,7 @@
                                     },
                                     "email": {
                                         "type": "string",
-                                        "example": "john@example.com"
+                                        "example": "john-updated@example.com"
                                     }
                                 },
                                 "type": "object"
