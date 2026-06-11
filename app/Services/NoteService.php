@@ -14,9 +14,9 @@ class NoteService
         protected NoteRepository $noteRepository
     ) {}
 
-    public function getAll(int $userId): ServiceReturn
+    public function getAll(int $userId, int $perPage = 6): ServiceReturn
     {
-        $notes = $this->noteRepository->findAllForUser(userId: $userId);
+        $notes = $this->noteRepository->findAllForUser(userId: $userId, perPage: $perPage);
         return ServiceReturn::success(data: $notes);
     }
 

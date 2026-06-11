@@ -12,9 +12,9 @@ class SubjectService
         protected SubjectRepository $subjectRepository
     ) {}
 
-    public function getAll(int $userId): ServiceReturn
+    public function getAll(int $userId, int $perPage = 5): ServiceReturn
     {
-        $subjects = $this->subjectRepository->getAllByUser(userId: $userId);
+        $subjects = $this->subjectRepository->getAllByUser(userId: $userId, perPage: $perPage);
         return ServiceReturn::success(data: $subjects);
     }
 

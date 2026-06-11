@@ -2,19 +2,21 @@
 
 namespace Database\Factories;
 
-use App\Models\Category;
+use App\Models\Note;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class CategoryFactory extends Factory
+class NoteFactory extends Factory
 {
-    protected $model = Category::class;
+    protected $model = Note::class;
 
     public function definition(): array
     {
         return [
             'user_id' => User::factory(),
-            'name'    => fake()->unique()->word() . ' ' . fake()->unique()->randomNumber(5, false),
+            'title'   => $this->faker->sentence(),
+            'content' => $this->faker->paragraph(),
+            'color'   => '#fff9c4',
         ];
     }
 }

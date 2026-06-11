@@ -26,7 +26,6 @@ class AccountService
             'name'  => $user->name,
             'email' => $user->email,
             'photo' => $user->photo ? asset('storage/' . $user->photo) : null,
-            'role'  => $user->role,
         ];
 
         return ServiceReturn::success(data: $data);

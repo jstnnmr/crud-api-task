@@ -441,6 +441,11 @@
                 <hr style="border:none;border-top:1px solid var(--border);opacity:0.3;">
                 @endif
                 @endforeach
+                @if ($tasks->hasPages())
+                <div style="padding: 1rem 0 0; border-top: 1px solid var(--border); margin-top: 1rem;">
+                    {{ $tasks->links() }}
+                </div>
+                @endif
             @endif
         </div>
     </div>

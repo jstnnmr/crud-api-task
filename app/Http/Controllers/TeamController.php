@@ -14,10 +14,11 @@ class TeamController extends Controller
         protected TeamService $teamService
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
         $user = auth()->user();
-        $tasks = $this->teamService->getMyTasks(userId: $user->id);
+        $perPage = (int) $request->query('per_page', 10);
+        $tasks = $this->teamService->getMyTasks(userId: $user->id, perPage: $perPage);
         $invitations = $this->teamService->getInvitations(userId: $user->id);
         $categories = $user->categories()->orderBy('name')->get();
         return view('team.index', [
@@ -27,17 +28,19 @@ class TeamController extends Controller
         ]);
     }
 
-    public function myTasks(): View
+    public function myTasks(Request $request): View
     {
         $user = auth()->user();
-        $result = $this->teamService->getMyTasks(userId: $user->id);
+        $perPage = (int) $request->query('per_page', 10);
+        $result = $this->teamService->getMyTasks(userId: $user->id, perPage: $perPage);
         $categories = $user->categories()->orderBy('name')->get();
         return view('tasks.index', ['tasks' => $result->data, 'categories' => $categories]);
     }
 
     public function getMyTasks(Request $request): JsonResponse
     {
-        $result = $this->teamService->getMyTasks(userId: $request->user()->id);
+        $perPage = (int) $request->query('per_page', 10);
+        $result = $this->teamService->getMyTasks(userId: $request->user()->id, perPage: $perPage);
         return response()->json($result, $result->status);
     }
 

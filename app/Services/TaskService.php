@@ -17,9 +17,9 @@ class TaskService
         protected TaskRepository $taskRepository
     ) {}
 
-    public function getAll(int $userId): ServiceReturn
+    public function getAll(int $userId, ?string $status = null, ?string $sort = null, int $perPage = 10): ServiceReturn
     {
-        $tasks = $this->taskRepository->getAllByUser(userId: $userId);
+        $tasks = $this->taskRepository->getAllByUser(userId: $userId, status: $status, sort: $sort, perPage: $perPage);
         return ServiceReturn::success(data: $tasks);
     }
 

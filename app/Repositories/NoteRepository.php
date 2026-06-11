@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Collection;
 
 class NoteRepository
 {
-    public function findAllForUser(int $userId): Collection
+    public function findAllForUser(int $userId, int $perPage = 6): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         return Note::where('user_id', $userId)
             ->orWhereHas('collaborators', fn($q) => $q->where('user_id', $userId))
             ->with(['owner', 'collaborators'])
             ->latest('updated_at')
-            ->get();
+            ->paginate($perPage);
     }
 
     public function findOwned(int $id, int $userId): ?Note
