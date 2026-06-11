@@ -165,6 +165,23 @@
     .badge-completed { background: rgba(142,125,255,0.1); color: #8e7dff; border: 1px solid rgba(142,125,255,0.15); }
     .badge-category { background: rgba(129,140,248,0.08); color: #818cf8; border: 1px solid rgba(129,140,248,0.15); }
     .due-date { font-size: 0.65rem; color: var(--text-muted); white-space: nowrap; }
+
+    .task-row-click { cursor: pointer; }
+    .task-row-click td:last-child { position: relative; }
+    .task-row-click:hover td { background: var(--surface2); }
+
+    .view-modal { max-width: 520px; }
+    .view-detail { display: flex; flex-direction: column; gap: 0.85rem; }
+    .view-detail-row { display: flex; align-items: flex-start; gap: 0.75rem; }
+    .view-detail-label { font-size: 0.62rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-muted); min-width: 80px; flex-shrink: 0; padding-top: 2px; }
+    .view-detail-value { font-size: 0.82rem; color: var(--text); }
+    .view-detail-value .subject-color { width: 10px; height: 10px; vertical-align: middle; }
+    .view-title { font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 600; color: var(--text); margin-bottom: 0.15rem; }
+    .view-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.6; }
+    .view-actions { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
+    .view-actions .btn { flex: 1; justify-content: center; }
+    .view-divider { height: 1px; background: var(--border); margin: 0.25rem 0; }
+    .view-btn-xs { padding: 0.35rem 0.65rem; font-size: 0.65rem; min-height: 32px; }
     .no-tasks {
         text-align: center;
         padding: 1.5rem;
@@ -371,7 +388,7 @@
             </thead>
             <tbody>
                 @foreach ($subject->tasks as $task)
-                <tr>
+                <tr class="task-row-click" onclick="toggleModal('viewTaskModal-{{ $task->id }}')">
                     <td>
                         <div class="task-title">{{ $task->title }}</div>
                         @if ($task->description)
@@ -396,7 +413,7 @@
                         <span style="color:var(--text-muted);opacity:0.4;font-size:0.62rem;">—</span>
                         @endif
                     </td>
-                    <td style="text-align:right;">
+                    <td style="text-align:right;" onclick="event.stopPropagation()">
                         <div class="actions" style="display:flex;gap:0.3rem;justify-content:flex-end;">
                             @if ($task->status !== 'completed')
                             <form action="{{ route('tasks.complete', $task->id) }}" method="POST" style="display:inline;" onsubmit="triggerConfetti()">
@@ -538,6 +555,10 @@
                     <input type="date" name="due_date" />
                     @error('due_date') <div class="err">{{ $message }}</div> @enderror
                 </div>
+                <div class="field">
+                    <label>Invite Collaborator (optional)</label>
+                    <input type="email" name="invited_email" placeholder="colleague@cosmos.io" />
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-success btn-full">Add Task ✦</button>
@@ -651,6 +672,10 @@
                     <input type="date" name="due_date" value="{{ $task->due_date ? $task->due_date->format('Y-m-d') : '' }}" />
                     @error('due_date') <div class="err">{{ $message }}</div> @enderror
                 </div>
+                <div class="field">
+                    <label>Invite Collaborator (optional)</label>
+                    <input type="email" name="invited_email" placeholder="colleague@cosmos.io" />
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-blue btn-full">Update Task ✦</button>
@@ -678,6 +703,75 @@
                         Delete ✦
                     </button>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- View Task --}}
+<div id="viewTaskModal-{{ $task->id }}" class="modal-overlay">
+    <div class="modal view-modal">
+        <div class="modal-header">
+            <span class="modal-title">✦ Task Details</span>
+            <button class="modal-close" onclick="toggleModal('viewTaskModal-{{ $task->id }}')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div>
+                <div class="view-title">{{ $task->title }}</div>
+                @if ($task->description)
+                <div class="view-desc">{{ $task->description }}</div>
+                @endif
+            </div>
+            <div class="view-divider"></div>
+            <div class="view-detail">
+                @if ($task->subject)
+                <div class="view-detail-row">
+                    <span class="view-detail-label">Subject</span>
+                    <span class="view-detail-value">
+                        <span class="subject-color" style="background:{{ $task->subject->color ?? '#8e7dff' }}"></span>
+                        {{ $task->subject->name }}
+                    </span>
+                </div>
+                @endif
+                @if ($task->category)
+                <div class="view-detail-row">
+                    <span class="view-detail-label">Category</span>
+                    <span class="view-detail-value"><span class="badge badge-category">{{ $task->category->name }}</span></span>
+                </div>
+                @endif
+                <div class="view-detail-row">
+                    <span class="view-detail-label">Priority</span>
+                    <span class="view-detail-value"><span class="badge badge-{{ $task->priority }}">{{ ucfirst($task->priority) }}</span></span>
+                </div>
+                <div class="view-detail-row">
+                    <span class="view-detail-label">Status</span>
+                    <span class="view-detail-value"><span class="badge badge-{{ $task->status }}">{{ str_replace('_', ' ', ucfirst($task->status)) }}</span></span>
+                </div>
+                @if ($task->due_date)
+                <div class="view-detail-row">
+                    <span class="view-detail-label">Due Date</span>
+                    <span class="view-detail-value">{{ \Carbon\Carbon::parse($task->due_date)->format('M j, Y') }}</span>
+                </div>
+                @endif
+                <div class="view-detail-row">
+                    <span class="view-detail-label">Points</span>
+                    <span class="view-detail-value">{{ $task->points_earned ?? \App\Models\Task::POINTS[$task->priority] ?? 0 }} pts</span>
+                </div>
+                <div class="view-detail-row">
+                    <span class="view-detail-label">Created</span>
+                    <span class="view-detail-value">{{ $task->created_at->format('M j, Y') }}</span>
+                </div>
+            </div>
+            <div class="view-divider"></div>
+            <div class="view-actions">
+                @if ($task->status !== 'completed')
+                <form action="{{ route('tasks.complete', $task->id) }}" method="POST" style="display:inline;" onsubmit="triggerConfetti()">
+                    @csrf @method('PATCH')
+                    <button type="submit" class="btn btn-success view-btn-xs">✔ Done</button>
+                </form>
+                @endif
+                <button onclick="event.stopPropagation();toggleModal('viewTaskModal-{{ $task->id }}');toggleModal('editTaskModal-{{ $task->id }}')" class="btn btn-blue view-btn-xs">Edit</button>
+                <button onclick="event.stopPropagation();toggleModal('viewTaskModal-{{ $task->id }}');toggleModal('deleteTaskModal-{{ $task->id }}')" class="btn btn-danger view-btn-xs">Delete</button>
             </div>
         </div>
     </div>

@@ -22,6 +22,8 @@ class DashboardController extends Controller
             ->where('status', '!=', 'completed')
             ->get();
 
-        return view('dashboard', compact('user', 'subjects', 'todayTasks'));
+        $categories = $user->categories()->orderBy('name')->get();
+
+        return view('dashboard', compact('user', 'subjects', 'todayTasks', 'categories'));
     }
 }

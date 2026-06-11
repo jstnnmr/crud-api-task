@@ -19,9 +19,11 @@ class TeamController extends Controller
         $user = auth()->user();
         $tasks = $this->teamService->getMyTasks(userId: $user->id);
         $invitations = $this->teamService->getInvitations(userId: $user->id);
+        $categories = $user->categories()->orderBy('name')->get();
         return view('team.index', [
             'tasks'       => $tasks->data,
             'invitations' => $invitations->data,
+            'categories'  => $categories,
         ]);
     }
 
@@ -29,7 +31,8 @@ class TeamController extends Controller
     {
         $user = auth()->user();
         $result = $this->teamService->getMyTasks(userId: $user->id);
-        return view('tasks.index', ['tasks' => $result->data]);
+        $categories = $user->categories()->orderBy('name')->get();
+        return view('tasks.index', ['tasks' => $result->data, 'categories' => $categories]);
     }
 
     public function getMyTasks(Request $request): JsonResponse
