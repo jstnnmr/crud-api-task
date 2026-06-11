@@ -54,6 +54,7 @@
 @endpush
 
 @section('content')
+<h1>Hello World</h1>
 <div class="container">
     <div class="flex items-center justify-between mb-2" style="flex-wrap:wrap;gap:.75rem;">
         <div>
