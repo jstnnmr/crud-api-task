@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use App\Services\TaskService;
+use App\Services\TeamService;
 use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
     public function __construct(
-        protected TaskService $taskService
+        protected TaskService $taskService,
+        protected TeamService $teamService
     ) {}
 
     public function index(Request $request): JsonResponse|RedirectResponse
@@ -52,6 +54,7 @@ class TaskController extends Controller
             'priority'      => 'required|in:low,medium,high',
             'status'        => 'required|in:pending,in_progress,completed',
             'due_date'      => 'nullable|date',
+            'invited_email' => 'nullable|email|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -71,11 +74,22 @@ class TaskController extends Controller
             data: $validator->validated()
         );
 
+        // Send invite if email provided
+        if ($request->filled('invited_email') && $result->success) {
+            $this->teamService->invite(
+                userId: auth()->id(),
+                data: [
+                    'task_id'       => $result->data->id,
+                    'invited_email' => $request->invited_email,
+                ]
+            );
+        }
+
         if ($request->wantsJson()) {
             return response()->json(['success' => true, 'data' => $result->data], 201);
         }
 
-        return redirect()->route('subjects.data')->with('success', 'Task added!');
+        return redirect()->route('subjects.data')->with('success', 'Task added!' . ($request->filled('invited_email') ? ' Invitation sent.' : ''));
     }
 
     public function update(Request $request, int $id): JsonResponse|RedirectResponse
@@ -88,6 +102,7 @@ class TaskController extends Controller
             'priority'      => 'sometimes|in:low,medium,high',
             'status'        => 'sometimes|in:pending,in_progress,completed',
             'due_date'      => 'nullable|date',
+            'invited_email' => 'nullable|email|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -106,11 +121,22 @@ class TaskController extends Controller
             return redirect()->back()->with('error', $result->message);
         }
 
+        // Send invite if email provided
+        if ($request->filled('invited_email')) {
+            $this->teamService->invite(
+                userId: auth()->id(),
+                data: [
+                    'task_id'       => $id,
+                    'invited_email' => $request->invited_email,
+                ]
+            );
+        }
+
         if ($request->wantsJson()) {
             return response()->json(['success' => true, 'data' => $result->data]);
         }
 
-        return redirect()->route('subjects.data')->with('success', 'Task updated!');
+        return redirect()->route('subjects.data')->with('success', 'Task updated!' . ($request->filled('invited_email') ? ' Invitation sent.' : ''));
     }
 
     public function destroy(Request $request, int $id): JsonResponse|RedirectResponse

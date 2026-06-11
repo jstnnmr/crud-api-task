@@ -555,6 +555,10 @@
                     <input type="date" name="due_date" />
                     @error('due_date') <div class="err">{{ $message }}</div> @enderror
                 </div>
+                <div class="field">
+                    <label>Invite Collaborator (optional)</label>
+                    <input type="email" name="invited_email" placeholder="colleague@cosmos.io" />
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-success btn-full">Add Task ✦</button>
@@ -667,6 +671,10 @@
                     <label>Due Date</label>
                     <input type="date" name="due_date" value="{{ $task->due_date ? $task->due_date->format('Y-m-d') : '' }}" />
                     @error('due_date') <div class="err">{{ $message }}</div> @enderror
+                </div>
+                <div class="field">
+                    <label>Invite Collaborator (optional)</label>
+                    <input type="email" name="invited_email" placeholder="colleague@cosmos.io" />
                 </div>
             </div>
             <div class="modal-footer">

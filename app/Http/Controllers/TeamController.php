@@ -19,9 +19,11 @@ class TeamController extends Controller
         $user = auth()->user();
         $tasks = $this->teamService->getMyTasks(userId: $user->id);
         $invitations = $this->teamService->getInvitations(userId: $user->id);
+        $categories = $user->categories()->orderBy('name')->get();
         return view('team.index', [
             'tasks'       => $tasks->data,
             'invitations' => $invitations->data,
+            'categories'  => $categories,
         ]);
     }
 

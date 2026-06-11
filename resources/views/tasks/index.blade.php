@@ -447,6 +447,10 @@
                     <label>Due Date</label>
                     <input type="date" name="due_date" value="{{ $task->due_date ? $task->due_date->format('Y-m-d') : '' }}" />
                 </div>
+                <div class="field">
+                    <label>Invite Collaborator (optional)</label>
+                    <input type="email" name="invited_email" placeholder="colleague@cosmos.io" />
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="submit" class="btn btn-blue btn-full" style="background:rgba(129,140,248,0.12);color:#818cf8;border:1px solid rgba(129,140,248,0.25);">Update Task ✦</button>
