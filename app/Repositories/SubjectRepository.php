@@ -7,12 +7,13 @@ use Illuminate\Database\Eloquent\Collection;
 
 class SubjectRepository
 {
-    public function getAllByUser(int $userId): Collection
+    public function getAllByUser(int $userId, int $perPage = 5): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         return Subject::where('user_id', $userId)
             ->withCount('tasks')
             ->withCount(['tasks as completed_tasks_count' => fn($q) => $q->where('status', 'completed')])
-            ->get();
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
     }
 
     public function findByIdAndUser(int $id, int $userId): ?Subject

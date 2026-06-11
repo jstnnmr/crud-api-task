@@ -55,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Categories
     Route::apiResource('categories', CategoryController::class)->names('api.categories');
 
+
     // Tasks
     Route::apiResource('tasks', TaskController::class)->names('api.tasks');
     Route::patch('tasks/{id}/complete', [TaskController::class, 'complete']);

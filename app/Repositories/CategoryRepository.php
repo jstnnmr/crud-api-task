@@ -12,6 +12,13 @@ class CategoryRepository
         return Category::where('user_id', $userId)->get();
     }
 
+    public function getAllByUserPaginated(int $userId, int $perPage = 10): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        return Category::where('user_id', $userId)
+            ->orderBy('name')
+            ->paginate($perPage);
+    }
+
     public function findByIdAndUser(int $id, int $userId): ?Category
     {
         return Category::where('id', $id)

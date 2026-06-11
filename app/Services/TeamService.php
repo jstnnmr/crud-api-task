@@ -15,9 +15,9 @@ class TeamService
         protected TeamRepository $teamRepository
     ) {}
 
-    public function getMyTasks(int $userId): ServiceReturn
+    public function getMyTasks(int $userId, int $perPage = 10): ServiceReturn
     {
-        $tasks = $this->teamRepository->findTasksForUser(userId: $userId);
+        $tasks = $this->teamRepository->findTasksForUser(userId: $userId, perPage: $perPage);
         return ServiceReturn::success(data: $tasks);
     }
 

@@ -54,7 +54,6 @@
 @endpush
 
 @section('content')
-<h1>Hello World</h1>
 <div class="container">
     <div class="flex items-center justify-between mb-2" style="flex-wrap:wrap;gap:.75rem;">
         <div>
@@ -106,6 +105,11 @@
         </div>
         @endforeach
     </div>
+    @if ($notes->hasPages())
+    <div style="margin-top: 1.5rem;">
+        {{ $notes->links() }}
+    </div>
+    @endif
     @endif
 </div>
 
@@ -159,7 +163,7 @@
 <script>
 let quill = null;
 let currentNoteId = null;
-const notesData = @json($notes);
+const notesData = @json($notes->items());
 
 function initQuill() {
     if (quill) return;

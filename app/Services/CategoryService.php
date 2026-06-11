@@ -18,6 +18,12 @@ class CategoryService
         return ServiceReturn::success(data: $categories);
     }
 
+    public function getAllPaginated(int $userId, int $perPage = 10): ServiceReturn
+    {
+        $categories = $this->categoryRepository->getAllByUserPaginated(userId: $userId, perPage: $perPage);
+        return ServiceReturn::success(data: $categories);
+    }
+
     public function create(int $userId, string $name): ServiceReturn
     {
         $category = $this->categoryRepository->firstOrCreate(userId: $userId, name: $name);

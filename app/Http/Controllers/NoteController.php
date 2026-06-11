@@ -14,15 +14,17 @@ class NoteController extends Controller
         protected NoteService $noteService
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $result = $this->noteService->getAll(userId: auth()->id());
+        $perPage = (int) $request->query('per_page', 6);
+        $result = $this->noteService->getAll(userId: auth()->id(), perPage: $perPage);
         return view('notes.index', ['notes' => $result->data]);
     }
 
     public function list(Request $request): JsonResponse
     {
-        $result = $this->noteService->getAll(userId: $request->user()->id);
+        $perPage = (int) $request->query('per_page', 6);
+        $result = $this->noteService->getAll(userId: $request->user()->id, perPage: $perPage);
         return response()->json($result, $result->status);
     }
 
