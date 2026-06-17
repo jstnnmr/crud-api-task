@@ -61,7 +61,7 @@ class TaskController extends Controller
             'title'         => 'required|string|max:255',
             'description'   => 'nullable|string',
             'priority'      => 'required|in:low,medium,high',
-            'status'        => 'required|in:pending,in_progress,completed',
+            'status'        => 'sometimes|in:pending,in_progress,completed',
             'due_date'      => 'nullable|date',
             'invited_email' => 'nullable|email|max:255',
         ]);
