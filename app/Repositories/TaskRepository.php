@@ -65,6 +65,14 @@ class TaskRepository
         return Task::with(['subject', 'category'])->get();
     }
 
+    public function getRecentForContext(int $userId, int $limit = 10): Collection
+    {
+        return Task::whereHas('subject', fn($q) => $q->where('user_id', $userId))
+            ->orderBy('created_at', 'desc')
+            ->take($limit)
+            ->get();
+    }
+
     public function findById(int $id): Task
     {
         return Task::findOrFail($id);
