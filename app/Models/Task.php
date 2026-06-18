@@ -15,6 +15,7 @@ class Task extends Model
     protected $fillable = [
         'subject_id',
         'category_id',
+        'parent_task_id',
         'title',
         'description',
         'priority',
@@ -60,5 +61,15 @@ class Task extends Model
     public function invitations(): HasMany
     {
         return $this->hasMany(TaskInvitation::class);
+    }
+
+    public function parentTask(): BelongsTo
+    {
+        return $this->belongsTo(Task::class, 'parent_task_id');
+    }
+
+    public function subtasks(): HasMany
+    {
+        return $this->hasMany(Task::class, 'parent_task_id');
     }
 }
