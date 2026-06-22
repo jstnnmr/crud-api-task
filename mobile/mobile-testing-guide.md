@@ -1,6 +1,6 @@
-# Mobile App Testing Guide (Laptop Only)
+# Mobile App Testing Guide
 
-Test the EaseTask Expo/React Native app without a physical device.
+Test the EaseTask Expo/React Native app on emulator, simulator, or a physical device.
 
 ---
 
@@ -55,7 +55,48 @@ Expo will detect the running emulator and install the app automatically.
 
 ---
 
-## 3. iOS Simulator (macOS Only)
+## 3. Android Physical Device
+
+### Setup
+1. On your Android device, go to **Settings → About Phone** and tap **Build Number** 7 times to enable Developer Options.
+2. Go to **Settings → Developer Options** and enable **USB Debugging**.
+3. Connect the device via USB and run:
+   ```bash
+   adb devices
+   ```
+   Accept the debugging prompt on the device if shown. Verify the device is listed.
+4. Install the **Expo Go** app from the Google Play Store.
+
+### Run (USB)
+```bash
+npm run android
+```
+
+Expo will install the app on the connected device automatically.
+
+### Run (QR Code / LAN)
+```bash
+npx expo start
+```
+
+Open Expo Go on the device and scan the QR code shown in the terminal. Both devices must be on the same Wi-Fi network.
+
+### Run (Tunnel — No LAN Required)
+If devices are on different networks, use Expo's tunnel:
+```bash
+npx expo start --tunnel
+```
+
+This routes through Expo's servers, so it works over the internet but may be slower.
+
+**Pros:** Real device behavior (camera, GPS, sensors, performance), no emulator overhead.
+**Cons:** Requires a physical Android device and USB cable (or LAN).
+
+> **Tip:** If the device doesn't show up with `adb devices`, install the appropriate USB driver for your device manufacturer.
+
+---
+
+## 4. iOS Simulator (macOS Only)
 
 ### Setup
 Xcode includes the iOS Simulator. Install from the Mac App Store if not present.
