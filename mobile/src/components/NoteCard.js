@@ -15,7 +15,16 @@ function stripMarkdown(text) {
     .replace(/#\s/g, '')
     .replace(/^- /gm, '')
     .replace(/^\d+\. /gm, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
     .trim();
+}
+
+function getPreview(content) {
+  const clean = stripMarkdown(content);
+  const lines = clean.split(/\n+/).filter(l => l.trim());
+  return lines.slice(0, 2).join('  ');
 }
 
 export default function NoteCard({ note, onPress, onDelete }) {
@@ -31,10 +40,7 @@ export default function NoteCard({ note, onPress, onDelete }) {
     Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: false, friction: 8 }).start();
   };
 
-  const rawContent = note.content || '';
-  const cleanContent = stripMarkdown(rawContent);
-  const lines = cleanContent.split('\n').filter(l => l.trim());
-  const preview = lines.slice(0, 2).join('  ');
+  const preview = getPreview(note.content || '');
 
   return (
     <Pressable

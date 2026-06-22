@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   ScrollView,
   RefreshControl,
@@ -21,7 +22,7 @@ import FadeInView from '../../components/FadeInView';
 
 const STATUS_FILTERS = ['all', 'pending', 'in_progress', 'completed'];
 
-export default function TasksScreen({ navigation }) {
+export default function TasksScreen({ navigation, route }) {
   const { colors } = useTheme();
   const { showToast } = useToast();
   const [tasks, setTasks] = useState([]);
@@ -29,6 +30,8 @@ export default function TasksScreen({ navigation }) {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const dueDate = route.params?.dueDate;
 
   const loadTasks = useCallback(async () => {
     setError('');
@@ -73,9 +76,17 @@ export default function TasksScreen({ navigation }) {
 
   if (loading) return <Loading />;
 
-  const filteredTasks = statusFilter === 'all'
-    ? tasks
-    : tasks.filter((t) => t.status === statusFilter);
+  const filteredTasks = tasks.filter((t) => {
+    if (dueDate && t.due_date?.slice(0, 10) !== dueDate) return false;
+    if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const title = (t.title || '').toLowerCase();
+      const desc = (t.description || '').toLowerCase();
+      if (!title.includes(q) && !desc.includes(q)) return false;
+    }
+    return true;
+  });
 
   return (
     <LinearGradient
@@ -118,31 +129,77 @@ export default function TasksScreen({ navigation }) {
           </View>
         </LinearGradient>
 
-        <View style={styles.filterRow}>
-          {STATUS_FILTERS.map((f) => (
-            <TouchableOpacity
-              key={f}
-              onPress={() => setStatusFilter(f)}
-              style={[
-                styles.filterChip,
-                {
-                  backgroundColor: statusFilter === f ? colors.primary + '30' : colors.bgInput,
-                  borderColor: statusFilter === f ? colors.primary : colors.border,
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  color: statusFilter === f ? colors.primary : colors.textMuted,
-                  fontSize: 12,
-                  fontWeight: '600',
-                  textTransform: 'capitalize',
-                }}
-              >
-                {f === 'in_progress' ? 'In Progress' : f === 'all' ? 'All' : f.replace('_', ' ')}
-              </Text>
+        <View style={[styles.searchBar, { backgroundColor: colors.bgInput, borderColor: colors.border }]}>
+          <Ionicons name="search" size={18} color={colors.textMuted} />
+          <TextInput
+            style={[styles.searchInput, { color: colors.text }]}
+            placeholder="Search tasks..."
+            placeholderTextColor={colors.textMuted}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <Ionicons name="close-circle" size={18} color={colors.textMuted} />
             </TouchableOpacity>
-          ))}
+          )}
+        </View>
+
+        {dueDate && (
+          <View style={styles.dateFilterBar}>
+            <Ionicons name="calendar" size={16} color={colors.primary} />
+            <Text style={{ color: colors.primary, fontSize: 13, fontWeight: '600', marginLeft: 6, flex: 1 }}>
+              Tasks due: {dueDate}
+            </Text>
+            <TouchableOpacity
+              onPress={() => navigation.setParams({ dueDate: undefined })}
+              style={[styles.clearBtn, { backgroundColor: colors.primary + '20' }]}
+            >
+              <Ionicons name="close" size={16} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={styles.filterRow}>
+          {STATUS_FILTERS.map((f) => {
+            const isActive = statusFilter === f;
+            const iconMap = {
+              all: 'funnel',
+              pending: 'time',
+              in_progress: 'sync',
+              completed: 'checkmark',
+            };
+            return (
+              <TouchableOpacity
+                key={f}
+                onPress={() => setStatusFilter(f)}
+                style={[
+                  styles.filterChip,
+                  {
+                    backgroundColor: isActive ? colors.primary + '30' : colors.bgInput,
+                    borderColor: isActive ? colors.primary : colors.border,
+                  },
+                  isActive && styles.filterChipActive,
+                ]}
+              >
+                <Ionicons
+                  name={iconMap[f]}
+                  size={13}
+                  color={isActive ? colors.primary : colors.textMuted}
+                  style={{ marginRight: 4 }}
+                />
+                <Text
+                  style={{
+                    color: isActive ? colors.primary : colors.textMuted,
+                    fontSize: 12,
+                    fontWeight: '700',
+                    textTransform: 'capitalize',
+                  }}
+                >
+                  {f === 'in_progress' ? 'In Progress' : f === 'all' ? 'All' : f.replace('_', ' ')}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         <View style={styles.list}>
@@ -153,8 +210,8 @@ export default function TasksScreen({ navigation }) {
           ) : filteredTasks.length === 0 ? (
             <EmptyState
               icon="checkbox-outline"
-              title={statusFilter === 'all' ? 'No Tasks Yet' : `No ${statusFilter.replace('_', ' ')} tasks`}
-              message="Tap + to create your first task"
+              title={searchQuery ? 'No Matching Tasks' : statusFilter === 'all' ? 'No Tasks Yet' : `No ${statusFilter.replace('_', ' ')} tasks`}
+              message={searchQuery ? 'Try a different search term' : "Tap + to create your first task"}
             />
           ) : (
             filteredTasks.map((task, i) => (
@@ -219,18 +276,53 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    height: 44,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    marginLeft: 8,
+    height: '100%',
+  },
+  dateFilterBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+  },
+  clearBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
   filterRow: {
     flexDirection: 'row',
     gap: 8,
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
+    paddingTop: spacing.sm,
     paddingBottom: 4,
   },
   filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingVertical: 8,
     borderRadius: borderRadius.full,
     borderWidth: 1,
+  },
+  filterChipActive: {
+    borderWidth: 1.5,
   },
   list: {
     padding: spacing.md,

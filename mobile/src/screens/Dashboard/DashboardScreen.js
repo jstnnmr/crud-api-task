@@ -142,12 +142,19 @@ export default function DashboardScreen({ navigation }) {
           </View>
         )}
 
-        <MiniCalendar
-          tasks={allTasks}
-          onDatePress={(date) => showToast(`Tasks due on ${date}`, 'info')}
-        />
+        <View style={{ marginTop: spacing.md }}>
+          <MiniCalendar
+            tasks={allTasks}
+            onDatePress={(date) =>
+              navigation.navigate('TaskTab', {
+                screen: 'TasksHome',
+                params: { dueDate: date },
+              })
+            }
+          />
+        </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section, { marginTop: spacing.md }]}>
           <View style={styles.sectionHeader}>
             <Text style={[typography.h3, { color: colors.text }]}>
               Today's Tasks

@@ -8,6 +8,7 @@ import { useToast } from '../../context/ToastContext';
 import { spacing, borderRadius } from '../../theme/colors';
 import { notesApi } from '../../api/note';
 import Button from '../../components/Button';
+import RichEditor from '../../components/RichEditor';
 import { Ionicons } from '@expo/vector-icons';
 
 const NOTE_COLORS = [
@@ -15,24 +16,52 @@ const NOTE_COLORS = [
   '#e1bee7', '#ffecb3', '#b2dfdb', '#f8bbd0',
 ];
 
-const MARKDOWN_TOOLS = [
-  { icon: 'code-slash', open: '# ', close: '', label: 'H1', block: true },
-  { icon: 'code-slash', open: '## ', close: '', label: 'H2', block: true },
-  { icon: 'code-slash', open: '### ', close: '', label: 'H3', block: true },
+const TOOLS = [
+  { icon: 'code-slash', command: 'formatBlock', value: 'h1', label: 'H1' },
+  { icon: 'code-slash', command: 'formatBlock', value: 'h2', label: 'H2' },
+  { icon: 'code-slash', command: 'formatBlock', value: 'h3', label: 'H3' },
   { type: 'divider' },
-  { icon: 'bold', open: '**', close: '**', label: 'Bold' },
-  { icon: 'italic', open: '*', close: '*', label: 'Italic' },
-  { icon: 'underline', open: '<u>', close: '</u>', label: 'Underline' },
-  { icon: 'remove', open: '~~', close: '~~', label: 'Strike' },
+  { icon: 'bold', command: 'bold', label: 'Bold' },
+  { icon: 'italic', command: 'italic', label: 'Italic' },
+  { icon: 'underline', command: 'underline', label: 'Underline' },
+  { icon: 'remove', command: 'strikeThrough', label: 'Strike' },
   { type: 'divider' },
-  { icon: 'list', open: '\n- ', close: '', label: 'Bullet', block: true },
-  { icon: 'list', open: '\n1. ', close: '', label: 'Ordered', block: true },
-  { icon: 'code-working', open: '`', close: '`', label: 'Code' },
+  { icon: 'list', command: 'insertUnorderedList', label: 'Bullet' },
+  { icon: 'list', command: 'insertOrderedList', label: 'Ordered' },
+  { icon: 'code-working', command: 'insertHTML', value: '<code>code</code>', label: 'Code' },
   { type: 'divider' },
-  { icon: 'link', open: '[', close: '](url)', label: 'Link' },
+  { icon: 'link', command: 'link', label: 'Link' },
   { type: 'divider' },
-  { icon: 'close-circle', label: 'Clear', action: 'clean' },
+  { icon: 'close-circle', command: 'removeFormat', label: 'Clear' },
 ];
+
+function mdToHtml(text) {
+  if (!text) return '';
+  if (/<[a-z][\s\S]*>/i.test(text)) return text;
+  let html = text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/\*(.+?)\*/g, '<i>$1</i>')
+    .replace(/~~(.+?)~~/g, '<s>$1</s>')
+    .replace(/<u>(.+?)<\/u>/g, '<u>$1</u>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+  html = '<p>' + html + '</p>';
+  html = html.replace(/<li>.*?<\/li>/g, (m) => '<ul>' + m + '</ul>');
+  html = html.replace(/<\/ul>\s*<ul>/g, '');
+  return html;
+}
+
+function stripHtml(html) {
+  return html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
+}
 
 export default function NoteDetailScreen({ route, navigation }) {
   const { colors } = useTheme();
@@ -44,8 +73,8 @@ export default function NoteDetailScreen({ route, navigation }) {
   const [content, setContent] = useState('');
   const [color, setColor] = useState(NOTE_COLORS[0]);
   const [saving, setSaving] = useState(false);
-  const contentRef = useRef(null);
-  const [selection, setSelection] = useState({ start: 0, end: 0 });
+  const editorRef = useRef(null);
+  const isLoadedRef = useRef(false);
 
   useEffect(() => {
     if (noteId) loadNote();
@@ -56,90 +85,53 @@ export default function NoteDetailScreen({ route, navigation }) {
       const res = await notesApi.show(noteId);
       const note = res.data.data || res.data.note || res.data;
       setTitle(note.title || '');
-      setContent(note.content || '');
       setColor(note.color || NOTE_COLORS[0]);
+      const raw = note.content || '';
+      const html = mdToHtml(raw);
+      setContent(html);
+      isLoadedRef.current = true;
     } catch (e) {
       showToast('Failed to load note', 'error');
       navigation.goBack();
     }
   };
 
-  const insertMarkdown = (open, close, isBlock) => {
-    const selected = content.substring(selection.start, selection.end);
-    const before = content.substring(0, selection.start);
-    const after = content.substring(selection.end);
-
-    if (isBlock) {
-      const prefix = open.startsWith('\n') ? open : '\n' + open;
-      setContent(before + prefix + (selected || '') + after);
-    } else if (selected) {
-      setContent(before + open + selected + close + after);
-    } else {
-      setContent(before + open + close + after);
+  const handleFormat = (tool) => {
+    if (tool.command === 'link') {
+      handleLink();
+      return;
     }
+    editorRef.current?.exec(tool.command, tool.value);
   };
 
   const handleLink = () => {
-    const selected = content.substring(selection.start, selection.end);
+    const insertLink = (url) => {
+      if (!url) return;
+      editorRef.current?.exec('createLink', url);
+    };
     if (Platform.OS === 'web') {
       const url = prompt('Enter URL:', 'https://');
-      if (url) {
-        const text = selected || 'link';
-        insertMarkdown('[' + text + '](', url + ')', false);
-      }
+      insertLink(url);
     } else {
       Alert.prompt('Insert Link', 'Enter URL:', [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Insert',
-          onPress: (url) => {
-            const text = selected || 'link';
-            const before = content.substring(0, selection.start);
-            const after = content.substring(selection.end);
-            setContent(before + '[' + text + '](' + (url || 'https://') + ')' + after);
-          },
-        },
+        { text: 'Insert', onPress: insertLink },
       ], 'plain-text', 'https://');
     }
   };
 
-  const handleFormat = (tool) => {
-    if (tool.action === 'clean') {
-      setContent(
-        content
-          .replace(/\*\*(.*?)\*\*/g, '$1')
-          .replace(/\*(.*?)\*/g, '$1')
-          .replace(/~~(.*?)~~/g, '$1')
-          .replace(/<u>(.*?)<\/u>/g, '$1')
-          .replace(/`(.*?)`/g, '$1')
-          .replace(/^### /gm, '')
-          .replace(/^## /gm, '')
-          .replace(/^# /gm, '')
-          .replace(/^- /gm, '')
-          .replace(/^\d+\. /gm, '')
-          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-      );
-      return;
-    }
-    if (tool.label === 'Link') {
-      handleLink();
-      return;
-    }
-    insertMarkdown(tool.open, tool.close, tool.block);
-  };
-
   const handleSave = async () => {
     const trimmedTitle = title.trim();
-    const trimmedContent = content.trim();
+    const strippedContent = stripHtml(content).trim();
 
-    if (!trimmedTitle && !trimmedContent.replace(/[*~`\s]/g, '')) {
+    if (!trimmedTitle && !strippedContent) {
       showToast('Note is empty — add a title or content', 'error');
       return;
     }
 
     setSaving(true);
     try {
-      const payload = { title: trimmedTitle, content: trimmedContent, color };
+      const payload = { title: trimmedTitle, content, color };
       if (isNew) {
         await notesApi.store(payload);
         showToast('Note created!', 'success');
@@ -191,7 +183,7 @@ export default function NoteDetailScreen({ route, navigation }) {
         style={styles.toolbarScroll}
         contentContainerStyle={styles.toolbar}
       >
-        {MARKDOWN_TOOLS.map((tool, i) =>
+        {TOOLS.map((tool, i) =>
           tool.type === 'divider' ? (
             <View key={i} style={[styles.divider, { backgroundColor: 'rgba(0,0,0,0.12)' }]} />
           ) : (
@@ -214,16 +206,11 @@ export default function NoteDetailScreen({ route, navigation }) {
           placeholderTextColor="rgba(26,26,46,0.35)"
           style={styles.titleInput}
         />
-        <TextInput
-          ref={contentRef}
-          value={content}
-          onChangeText={setContent}
-          onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
-          placeholder="Start writing..."
-          placeholderTextColor="rgba(26,26,46,0.3)"
-          style={styles.contentInput}
-          multiline
-          textAlignVertical="top"
+        <RichEditor
+          ref={editorRef}
+          initialContent={content}
+          onContentChange={setContent}
+          style={styles.editor}
         />
       </ScrollView>
 
@@ -283,8 +270,8 @@ const styles = StyleSheet.create({
   titleInput: {
     fontSize: 26, fontWeight: '700', color: '#1a1a2e', marginBottom: 12,
   },
-  contentInput: {
-    fontSize: 16, color: '#1a1a2e', lineHeight: 24, minHeight: 300,
+  editor: {
+    minHeight: 300,
   },
   bottomBar: {
     flexDirection: 'row', alignItems: 'center',

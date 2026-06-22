@@ -16,6 +16,7 @@
 /node_modules
 mobile/node_modules
 mobile/.expo
+mobile/dist
 /public/build
 /public/hot
 /public/storage
