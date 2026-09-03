@@ -3,6 +3,7 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTheme } from '../context/ThemeContext';
+import { fonts, shadows } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 import DashboardScreen from '../screens/Dashboard/DashboardScreen';
@@ -85,8 +86,7 @@ function AITabButton({ children, onPress, accessibilityState }) {
         ]}
       >
         {children}
-      </View>
-    </TouchableOpacity>
+      </View>    </TouchableOpacity>
   );
 }
 
@@ -120,22 +120,18 @@ export default function TabNavigator() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarStyle: {
-          backgroundColor: colors.bgLight + 'dd',
+          backgroundColor: colors.bgLight,
           borderTopColor: colors.border,
           borderTopWidth: 1,
           paddingTop: 8,
           paddingBottom: 10,
           height: 65,
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 12,
+          elevation: 0,
         },
         tabBarLabelStyle: {
+          fontFamily: fonts.uiMedium,
           fontSize: 10,
-          fontWeight: '700',
-          letterSpacing: 0.3,
+          letterSpacing: 0.1,
         },
       })}
     >
@@ -180,16 +176,12 @@ const styles = StyleSheet.create({
   aiButton: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 8,
-    shadowColor: '#8e7dff',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
+    ...shadows.md,
   },
   aiButtonFocused: {
-    transform: [{ scale: 1.08 }],
+    transform: [{ scale: 1.05 }],
   },
 });

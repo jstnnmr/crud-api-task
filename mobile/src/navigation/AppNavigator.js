@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { fonts } from '../theme/colors';
 import Loading from '../components/Loading';
 
 import LoginScreen from '../screens/Auth/LoginScreen';
@@ -34,10 +35,10 @@ export default function AppNavigator() {
           notification: colors.secondary,
         },
         fonts: {
-          regular: { fontFamily: 'DM Sans', fontWeight: '400' },
-          medium: { fontFamily: 'DM Sans', fontWeight: '500' },
-          bold: { fontFamily: 'DM Sans', fontWeight: '700' },
-          heavy: { fontFamily: 'DM Sans', fontWeight: '800' },
+          regular: { fontFamily: fonts.ui, fontWeight: '400' },
+          medium: { fontFamily: fonts.uiMedium, fontWeight: '500' },
+          bold: { fontFamily: fonts.uiBold, fontWeight: '700' },
+          heavy: { fontFamily: fonts.uiBold, fontWeight: '800' },
         },
       }}
     >

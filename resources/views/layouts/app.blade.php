@@ -730,7 +730,8 @@ function fabChat() {
                         role: 'assistant',
                         content: 'Sorry, something went wrong: ' + e.message,
                         displayContent: 'Sorry, something went wrong: ' + e.message,
-                        isError: true
+                        isError: true,
+                        failedPrompt: content
                     };
                 }
             } finally {
@@ -746,6 +747,11 @@ function fabChat() {
                 this.loading = false;
                 this.reader = null;
             }
+        },
+
+        retryMessage(prompt, index) {
+            this.messages.splice(index, 1);
+            this.sendMessage(prompt);
         },
 
         renderMarkdown(content) {

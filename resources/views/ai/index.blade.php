@@ -572,6 +572,11 @@ function aiChat() {
             }
         },
 
+        retryMessage(prompt, index) {
+            this.messages.splice(index, 1);
+            this.sendMessage(prompt);
+        },
+
         renderMarkdown(content) {
             if (!content) return '';
             const html = marked.parse(content, { breaks: true });

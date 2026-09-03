@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Animated, Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
-import { borderRadius, spacing } from '../theme/colors';
+import { borderRadius, spacing, fonts, shadows } from '../theme/colors';
 
 export default function Button({
   title,
@@ -16,31 +16,32 @@ export default function Button({
   const { colors } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  const bgColor = {
-    primary: colors.primary,
-    secondary: colors.secondary,
-    outline: 'transparent',
-    ghost: 'transparent',
-    danger: colors.danger,
+  const config = {
+    primary: { bg: colors.primary, fg: '#FFFFFF' },
+    secondary: { bg: colors.softPrimary, fg: colors.primary },
+    ghost: { bg: 'transparent', fg: colors.textSecondary },
+    danger: { bg: colors.danger, fg: '#FFFFFF' },
   }[variant];
 
-  const textColor = variant === 'outline' ? colors.primary
-    : variant === 'ghost' ? colors.textSecondary
-    : '#ffffff';
+  const isFilled = variant === 'primary' || variant === 'danger';
 
-  const borderStyle = variant === 'outline'
-    ? { borderWidth: 1.5, borderColor: colors.primary }
-    : {};
-
-  const paddingV = size === 'sm' ? 10 : size === 'lg' ? 16 : 12;
-  const fontSize = size === 'sm' ? 13 : size === 'lg' ? 17 : 15;
+  const height = size === 'sm' ? 42 : size === 'lg' ? 58 : 52;
+  const fontSize = size === 'sm' ? 13 : size === 'lg' ? 16 : 15;
 
   const handlePressIn = () => {
-    Animated.spring(scaleAnim, { toValue: 0.95, useNativeDriver: false, friction: 8 }).start();
+    Animated.timing(scaleAnim, {
+      toValue: 0.975,
+      duration: 90,
+      useNativeDriver: true,
+    }).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: false, friction: 8 }).start();
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 140,
+      useNativeDriver: true,
+    }).start();
   };
 
   return (
@@ -49,33 +50,30 @@ export default function Button({
       onPressOut={handlePressOut}
       onPress={onPress}
       disabled={disabled || loading}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: disabled || loading, busy: loading }}
+      style={({ pressed }) => [{ opacity: pressed || disabled ? 0.75 : 1 }]}
     >
       <Animated.View
         style={[
           styles.button,
           {
-            backgroundColor: bgColor,
-            paddingVertical: paddingV,
-            ...borderStyle,
+            backgroundColor: config.bg,
+            height,
             transform: [{ scale: scaleAnim }],
           },
-          variant === 'primary' && {
-            shadowColor: colors.primary,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 6,
-          },
-          disabled && !variant.includes('outline') && { opacity: 0.5 },
+          variant === 'ghost' && { borderWidth: 1, borderColor: 'transparent' },
+          isFilled && shadows.sm,
+          disabled && { opacity: 0.5 },
           style,
         ]}
       >
         {loading ? (
-          <ActivityIndicator color={textColor} size="small" />
+          <ActivityIndicator color={config.fg} size="small" />
         ) : (
           <>
             {icon}
-            <Text style={[styles.text, { color: textColor, fontSize }]}>{title}</Text>
+            <Text style={[styles.text, { color: config.fg, fontSize }]}>{title}</Text>
           </>
         )}
       </Animated.View>
@@ -89,10 +87,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
   text: {
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    fontFamily: fonts.uiSemiBold,
+    letterSpacing: 0.2,
   },
 });

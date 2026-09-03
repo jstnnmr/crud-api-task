@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
-import { borderRadius, spacing } from '../theme/colors';
+import { borderRadius, spacing, fonts } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -104,7 +104,7 @@ export default function MiniCalendar({ tasks = [], onDatePress }) {
                   style={[
                     styles.dayInner,
                     isToday && {
-                      backgroundColor: colors.primary + '25',
+                      backgroundColor: colors.primary + (colors.bg === '#121513' ? '30' : '20'),
                       borderColor: colors.primary,
                       borderWidth: 1.5,
                     },
@@ -114,7 +114,7 @@ export default function MiniCalendar({ tasks = [], onDatePress }) {
                     style={[
                       styles.dayText,
                       { color: isToday ? colors.primary : isPast ? colors.textMuted + '80' : colors.text },
-                      isToday && { fontWeight: '700' },
+                      isToday && { fontFamily: fonts.uiBold },
                     ]}
                   >
                     {day}
@@ -154,8 +154,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   monthLabel: {
+    fontFamily: fonts.uiBold,
     fontSize: 16,
-    fontWeight: '700',
   },
   weekDays: {
     flexDirection: 'row',
@@ -164,8 +164,8 @@ const styles = StyleSheet.create({
   weekDay: {
     flex: 1,
     textAlign: 'center',
+    fontFamily: fonts.uiMedium,
     fontSize: 11,
-    fontWeight: '600',
     paddingVertical: 4,
   },
   week: {
@@ -184,8 +184,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   dayText: {
+    fontFamily: fonts.uiMedium,
     fontSize: 13,
-    fontWeight: '500',
   },
   dot: {
     width: 4,

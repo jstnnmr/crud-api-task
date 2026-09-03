@@ -80,6 +80,26 @@ Test accounts (password: `password`):
 
 Config in `config/ai.php`. Providers: `opencodego` (default) and `groq`. Keys in `.env` (`OPENAICODE_API_KEY`, `GROQ_API_KEY`).
 
+## Frontend Design (Impeccable)
+
+This project carries the **Impeccable** design skills pack (`pbakaus/impeccable`).
+
+- **Always active when writing/refactoring/reviewing frontend code:** read
+  `.opencode/rules/impeccable.md` — anti-AI-slop UI guidelines, hierarchy/rhythm,
+  typography, color restraint, elevation, states/a11y, and motion. Apply it to the
+  React Native/Expo app (`mobile/`) and any web/HTML/CSS/Tailwind/React UI.
+- **Skill:** the full `/impeccable <command> <target>` skill is installed at
+  `.opencode/skills/impeccable/` (`init`, `shape`, `craft`, `audit`, `critique`,
+  `polish`, `distill`, `typeset`, `layout`, `colorize`, `animate`, `bolder`,
+  `quieter`, `clarify`, `adapt`, `optimize`, `harden`, `onboard`, `extract`, `live`).
+- **Standalone shortcuts:** `/impeccable-audit`, `/impeccable-polish`,
+  `/impeccable-teach` (defined in `opencode.json`).
+- **Project context files** (`PRODUCT.md`, `DESIGN.md`) live where the skill writes
+  them; the skill reads them via `node .opencode/skills/impeccable/scripts/context.mjs`.
+- The current mobile theme token palette (`mobile/src/theme/colors.js`) is a
+  purple/pink gradient-era system; a redesign should collapse it toward a restrained
+  palette per the rules before adding new UI.
+
 ## Conventions
 
 - Semantic commits: `feat(scope): description`, `fix(scope): description`, etc.

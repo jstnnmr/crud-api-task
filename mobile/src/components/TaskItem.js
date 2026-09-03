@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, Modal } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
-import { borderRadius, spacing } from '../theme/colors';
+import { borderRadius, spacing, fonts } from '../theme/colors';
 import Badge from './Badge';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -25,15 +25,19 @@ export default function TaskItem({ task, onPress, onComplete, compact }) {
   const isCompleted = task.status === 'completed';
 
   const handlePressIn = () => {
-    Animated.spring(scaleAnim, { toValue: 0.98, useNativeDriver: false, friction: 8 }).start();
+    Animated.timing(scaleAnim, {
+      toValue: 0.99,
+      duration: 90,
+      useNativeDriver: true,
+    }).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: false, friction: 8 }).start();
-  };
-
-  const handleLongPress = () => {
-    setMenuVisible(true);
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 140,
+      useNativeDriver: true,
+    }).start();
   };
 
   return (
@@ -42,8 +46,9 @@ export default function TaskItem({ task, onPress, onComplete, compact }) {
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={() => onPress?.(task)}
-        onLongPress={handleLongPress}
+        onLongPress={() => setMenuVisible(true)}
         delayLongPress={400}
+        accessibilityLabel={task.title}
       >
         <Animated.View
           style={[
@@ -51,7 +56,6 @@ export default function TaskItem({ task, onPress, onComplete, compact }) {
             {
               backgroundColor: colors.bgCard,
               borderColor: colors.border,
-              borderLeftColor: priorityColor,
               transform: [{ scale: scaleAnim }],
             },
             isCompleted && { opacity: 0.55 },
@@ -62,8 +66,8 @@ export default function TaskItem({ task, onPress, onComplete, compact }) {
               style={[
                 styles.check,
                 {
-                  borderColor: isCompleted ? colors.success : colors.textMuted + '60',
-                  backgroundColor: isCompleted ? colors.success + '20' : 'transparent',
+                  borderColor: isCompleted ? colors.success : colors.border,
+                  backgroundColor: isCompleted ? colors.success + '22' : 'transparent',
                 },
               ]}
             >
@@ -76,7 +80,7 @@ export default function TaskItem({ task, onPress, onComplete, compact }) {
             <Text
               style={[
                 styles.title,
-                { color: colors.text },
+                { color: isCompleted ? colors.textMuted : colors.text },
                 isCompleted && styles.completedText,
               ]}
               numberOfLines={compact ? 1 : 2}
@@ -92,7 +96,15 @@ export default function TaskItem({ task, onPress, onComplete, compact }) {
               </Text>
             )}
             <View style={styles.meta}>
-              <Badge label={task.priority} color={priorityColor} size="sm" />
+              <View
+                style={[
+                  styles.priorityDot,
+                  { backgroundColor: priorityColor },
+                ]}
+              />
+              <Text style={[styles.priorityLabel, { color: priorityColor }]}>
+                {task.priority}
+              </Text>
               {task.due_date && (
                 <Text style={[styles.date, { color: colors.textMuted }]}>
                   {new Date(task.due_date).toLocaleDateString()}
@@ -108,7 +120,7 @@ export default function TaskItem({ task, onPress, onComplete, compact }) {
             />
             {task.points_earned > 0 && (
               <Text style={[styles.points, { color: colors.accent }]}>
-                +{task.points_earned}pts
+                +{task.points_earned} pts
               </Text>
             )}
           </View>
@@ -154,15 +166,14 @@ const styles = StyleSheet.create({
   task: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     padding: spacing.md,
     borderWidth: 1,
-    borderLeftWidth: 4,
     marginBottom: spacing.sm,
   },
   checkWrap: {
     padding: 6,
-    marginRight: 8,
+    marginRight: spacing.xs,
   },
   check: {
     width: 28,
@@ -176,33 +187,47 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
+    fontFamily: fonts.uiSemiBold,
     fontSize: 15,
-    fontWeight: '600',
   },
   completedText: {
     textDecorationLine: 'line-through',
   },
   desc: {
+    fontFamily: fonts.uiRegular,
     fontSize: 13,
     marginTop: 2,
+    lineHeight: 18,
   },
   meta: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 6,
-    gap: 8,
+    gap: 6,
+  },
+  priorityDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  priorityLabel: {
+    fontFamily: fonts.uiMedium,
+    fontSize: 11,
+    textTransform: 'capitalize',
   },
   date: {
+    fontFamily: fonts.uiRegular,
     fontSize: 11,
+    marginLeft: 6,
   },
   right: {
     alignItems: 'flex-end',
-    marginLeft: 8,
+    marginLeft: spacing.sm,
     gap: 4,
   },
   points: {
+    fontFamily: fonts.uiSemiBold,
     fontSize: 11,
-    fontWeight: '700',
   },
   overlay: {
     flex: 1,
@@ -217,8 +242,8 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   menuTitle: {
+    fontFamily: fonts.uiBold,
     fontSize: 16,
-    fontWeight: '700',
     marginBottom: 4,
   },
   menuDivider: {
@@ -233,7 +258,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   menuItemText: {
+    fontFamily: fonts.uiMedium,
     fontSize: 15,
-    fontWeight: '500',
   },
 });

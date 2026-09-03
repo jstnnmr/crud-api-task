@@ -1,36 +1,34 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
-import { spacing } from '../theme/colors';
+import { spacing, fonts } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function EmptyState({ icon, title, message }) {
   const { colors } = useTheme();
-  const pulseAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 0.7, duration: 1500, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 1500, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-      ])
-    ).start();
-
-    Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: false }).start();
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 320,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
   }, []);
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+      <View
+        style={[styles.iconWrap, { backgroundColor: colors.softPrimary }]}
+      >
         <Ionicons
           name={icon || 'document-text-outline'}
-          size={72}
-          color={colors.textMuted}
-          style={{ opacity: 0.6 }}
+          size={30}
+          color={colors.primary}
         />
-      </Animated.View>
-      <Text style={[styles.title, { color: colors.textSecondary }]}>{title}</Text>
+      </View>
+      <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       {message && (
         <Text style={[styles.message, { color: colors.textMuted }]}>{message}</Text>
       )}
@@ -46,14 +44,23 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     paddingVertical: 60,
   },
+  iconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginTop: 20,
+    fontFamily: fonts.uiBold,
+    fontSize: 18,
+    marginTop: spacing.xs,
   },
   message: {
+    fontFamily: fonts.uiRegular,
     fontSize: 14,
-    marginTop: 8,
+    marginTop: spacing.sm,
     textAlign: 'center',
     lineHeight: 20,
     maxWidth: 260,

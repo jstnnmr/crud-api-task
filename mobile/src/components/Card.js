@@ -3,21 +3,29 @@ import { View, StyleSheet, Pressable, Animated } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { borderRadius, spacing, shadows } from '../theme/colors';
 
-export default function Card({ children, onPress, style, noPadding }) {
+export default function Card({ children, onPress, style, noPadding, elevated }) {
   const { colors } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
-    Animated.spring(scaleAnim, { toValue: 0.97, useNativeDriver: false, friction: 8 }).start();
+    Animated.timing(scaleAnim, {
+      toValue: 0.99,
+      duration: 90,
+      useNativeDriver: true,
+    }).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: false, friction: 8 }).start();
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 140,
+      useNativeDriver: true,
+    }).start();
   };
 
   const cardStyle = [
     styles.card,
-    shadows.sm,
+    elevated ? shadows.sm : null,
     {
       backgroundColor: colors.bgCard,
       borderColor: colors.border,
@@ -28,7 +36,13 @@ export default function Card({ children, onPress, style, noPadding }) {
 
   if (onPress) {
     return (
-      <Pressable onPressIn={handlePressIn} onPressOut={handlePressOut} onPress={onPress}>
+      <Pressable
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        accessibilityRole="button"
+        style={({ pressed }) => [{ opacity: pressed ? 0.85 : 1 }]}
+      >
         <Animated.View style={[...cardStyle, { transform: [{ scale: scaleAnim }] }]}>
           {children}
         </Animated.View>

@@ -4,50 +4,53 @@ import { useTheme } from '../context/ThemeContext';
 
 export default function Loading({ fullScreen = true }) {
   const { colors } = useTheme();
-  const pulseAnim = useRef(new Animated.Value(1)).current;
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
   const dot3 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 0.6, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-      ])
-    );
-
-    const bounce = (anim, delay) =>
+    const fade = (anim, delay) =>
       Animated.loop(
         Animated.sequence([
           Animated.delay(delay),
-          Animated.timing(anim, { toValue: 1, duration: 400, useNativeDriver: false }),
-          Animated.timing(anim, { toValue: 0, duration: 400, useNativeDriver: false }),
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 480,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(anim, {
+            toValue: 0,
+            duration: 480,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
         ])
       );
 
-    pulse.start();
-    bounce(dot1, 0).start();
-    bounce(dot2, 200).start();
-    bounce(dot3, 400).start();
+    fade(dot1, 0).start();
+    fade(dot2, 220).start();
+    fade(dot3, 440).start();
 
-    return () => { pulse.stop(); dot1.setValue(0); dot2.setValue(0); dot3.setValue(0); };
+    return () => {
+      dot1.stopAnimation();
+      dot2.stopAnimation();
+      dot3.stopAnimation();
+    };
   }, []);
 
   const content = (
     <View style={styles.loader}>
-      <Animated.View style={[styles.dot, { opacity: dot1.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }), transform: [{ scale: dot1.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1.2] }) }] }, { backgroundColor: colors.primary }]} />
-      <Animated.View style={[styles.dot, { opacity: dot2.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }), transform: [{ scale: dot2.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1.2] }) }] }, { backgroundColor: colors.secondary }]} />
-      <Animated.View style={[styles.dot, { opacity: dot3.interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] }), transform: [{ scale: dot3.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1.2] }) }] }, { backgroundColor: colors.accent }]} />
+      <Animated.View style={[styles.dot, { opacity: dot1.interpolate({ inputRange: [0, 1], outputRange: [0.25, 1] }) }, { backgroundColor: colors.primary }]} />
+      <Animated.View style={[styles.dot, { opacity: dot2.interpolate({ inputRange: [0, 1], outputRange: [0.25, 1] }) }, { backgroundColor: colors.primary }]} />
+      <Animated.View style={[styles.dot, { opacity: dot3.interpolate({ inputRange: [0, 1], outputRange: [0.25, 1] }) }, { backgroundColor: colors.primary }]} />
     </View>
   );
 
   if (fullScreen) {
     return (
       <View style={[styles.container, { backgroundColor: colors.bg }]}>
-        <Animated.View style={{ opacity: pulseAnim }}>
-          {content}
-        </Animated.View>
+        {content}
       </View>
     );
   }
@@ -70,8 +73,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   dot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
   },
 });

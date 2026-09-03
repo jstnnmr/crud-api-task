@@ -1,24 +1,30 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
-import { borderRadius, spacing } from '../theme/colors';
+import { borderRadius, spacing, fonts, shadows } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function StatCard({ icon, label, value, color }) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const fill = isDark ? '30' : '18';
 
   return (
     <View
       style={[
         styles.card,
         {
-          backgroundColor: colors.bgCard + 'cc',
+          backgroundColor: colors.bgCard,
           borderColor: colors.border,
         },
       ]}
     >
-      <View style={[styles.iconWrap, { backgroundColor: color + '20', borderColor: color + '30', borderWidth: 1 }]}>
-        <Ionicons name={icon} size={20} color={color} />
+      <View
+        style={[
+          styles.iconWrap,
+          { backgroundColor: (color || colors.primary) + fill },
+        ]}
+      >
+        <Ionicons name={icon} size={18} color={color || colors.primary} />
       </View>
       <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
       <Text style={[styles.label, { color: colors.textMuted }]}>{label}</Text>
@@ -29,25 +35,27 @@ export default function StatCard({ icon, label, value, color }) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     padding: spacing.md,
     borderWidth: 1,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginHorizontal: 4,
   },
   iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 34,
+    height: 34,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   value: {
-    fontSize: 22,
-    fontWeight: '700',
+    fontFamily: fonts.display,
+    fontSize: 32,
+    lineHeight: 36,
   },
   label: {
+    fontFamily: fonts.uiMedium,
     fontSize: 12,
     marginTop: 2,
   },
