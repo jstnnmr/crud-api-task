@@ -10,12 +10,14 @@ use Illuminate\Database\Eloquent\Collection;
 
 class TeamRepository
 {
-    public function findTasksForUser(int $userId): Collection
+    public function findTasksForUser(int $userId, int $perPage = 10): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         return Task::where(function ($q) use ($userId) {
             $q->whereHas('subject', fn($sq) => $sq->where('user_id', $userId))
               ->orWhereHas('collaborators', fn($cq) => $cq->where('user_id', $userId));
-        })->with(['subject', 'category', 'collaborators'])->get();
+        })->with(['subject', 'category', 'collaborators'])
+          ->orderBy('created_at', 'desc')
+          ->paginate($perPage);
     }
 
     public function findTaskForUser(int $taskId, int $userId): ?Task

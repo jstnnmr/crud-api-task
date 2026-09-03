@@ -53,6 +53,11 @@ Artisan::command('tasks:send-overdue-reminders {--days-ahead=1 : Number of days 
     $this->info("Sent {$sent} reminder email(s) for {$tasks->count()} task(s).");
 })->purpose('Send email reminders for tasks nearing their due date');
 
+Artisan::command('ai:prune-sessions', function () {
+    $count = \App\Models\AiChatSession::where('updated_at', '<', now()->subDays(30))->delete();
+    $this->info("Pruned {$count} AI chat sessions older than 30 days.");
+})->purpose('Prune AI chat sessions older than 30 days');
+
 Schedule::command('tasks:send-overdue-reminders --days-ahead=1')
     ->dailyAt('08:00')
     ->withoutOverlapping()
@@ -62,3 +67,8 @@ Schedule::command('tasks:send-overdue-reminders --days-ahead=0 --include-overdue
     ->dailyAt('18:00')
     ->withoutOverlapping()
     ->description('Evening: remind about tasks due today and overdue tasks');
+
+Schedule::command('ai:prune-sessions')
+    ->daily()
+    ->withoutOverlapping()
+    ->description('Daily: prune AI chat sessions older than 30 days');

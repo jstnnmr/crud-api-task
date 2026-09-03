@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "EaseTask",
+    "slug": "easetask",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "backgroundColor": "#0d0d1a"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.easetask.app",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Allow EaseTask to access your photos to set a profile picture."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0d0d1a"
+      },
+      "package": "com.easetask.app"
+    },
+    "plugins": [
+      "expo-font",
+      "@react-native-community/datetimepicker",
+      "expo-asset"
+    ]
+  }
+}

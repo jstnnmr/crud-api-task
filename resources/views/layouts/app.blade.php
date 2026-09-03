@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/simple-datatables@9.0.3/dist/umd/simple-datatables.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
     <style>[x-cloak] { display: none !important; }</style>
     @stack('styles')
     <title>@yield('title', 'EaseTask ✦')</title>
@@ -410,8 +412,8 @@ html.light-mode body {
 </script>
 
 @auth
-<div x-data="floatingChat()">
-    <button class="ai-fab" @click="open = !open" :class="{ 'ai-fab--open': open }" aria-label="Toggle AI assistant">
+<div x-data="fabChat()">
+    <button class="ai-fab" @click="toggleFab()" :class="{ 'ai-fab--open': open }" aria-label="Toggle AI assistant">
         <svg class="ai-fab-icon" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/></svg>
         <svg class="ai-fab-close" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
@@ -425,7 +427,23 @@ html.light-mode body {
             <button class="ai-fab-close-btn" @click="open = false">&times;</button>
         </div>
         <div class="ai-fab-body" x-ref="fabMessages">
-            <template x-if="messages.length === 0">
+            <!-- Context Strip -->
+            <div class="ai-context-strip" x-data x-init="$store.aiContext.init({{ json_encode(['overdue' => 0, 'due_today' => 0, 'streak' => 0]) }})" style="margin: -0.75rem -0.75rem 0.5rem; border-radius: 0;">
+                <div class="ai-context-cell">
+                    <div class="ai-context-label">Overdue</div>
+                    <div class="ai-context-value ai-context-value--coral" x-text="$store.aiContext.overdue"></div>
+                </div>
+                <div class="ai-context-cell">
+                    <div class="ai-context-label">Today</div>
+                    <div class="ai-context-value ai-context-value--purple" x-text="$store.aiContext.due_today"></div>
+                </div>
+                <div class="ai-context-cell">
+                    <div class="ai-context-label">Streak</div>
+                    <div class="ai-context-value ai-context-value--teal" x-text="$store.aiContext.streak + 'd'"></div>
+                </div>
+            </div>
+
+            <template x-if="messages.length === 0 && !loading && !fabLoading">
                 <div class="ai-fab-empty">
                     <p>How can I help?</p>
                     <div class="ai-fab-chips">
@@ -435,66 +453,318 @@ html.light-mode body {
                     </div>
                 </div>
             </template>
-            <template x-for="(msg, i) in messages" :key="i">
-                <div class="msg-row" :class="msg.role">
-                    <div class="msg-bubble msg-bubble-sm" x-text="msg.content"></div>
+
+            <template x-if="fabLoading">
+                <div style="padding: 0.5rem; width: 100%;">
+                    <div class="ai-skeleton-row" style="width: 60%;"></div>
+                    <div class="ai-skeleton-row" style="width: 80%; animation-delay: 0.15s;"></div>
+                    <div class="ai-skeleton-row" style="width: 45%; animation-delay: 0.3s;"></div>
                 </div>
             </template>
-            <div x-show="loading" class="msg-row assistant">
-                <div class="typing typing-sm"><span></span><span></span><span></span></div>
+
+            @include('ai.components.message-row')
+
+            <div x-show="loading && messages.length > 0" class="ai-row__assistant" style="padding: 6px 16px 6px 34px;">
+                <div style="display: flex; gap: 6px; align-items: center; padding: 4px 0;">
+                    <span class="typing-dot-pulse"></span>
+                    <span class="typing-dot-pulse" style="animation-delay: 0.2s;"></span>
+                    <span class="typing-dot-pulse" style="animation-delay: 0.4s;"></span>
+                </div>
             </div>
         </div>
-        <div class="ai-fab-input">
-            <form @submit.prevent="sendMessage(input)">
-                <input x-model="input" type="text" placeholder="Ask anything..." :disabled="loading">
-                <button type="submit" :disabled="loading || !input.trim()">
-                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg>
+
+        <template x-if="showNudge">
+            <div class="ai-nudge-banner" style="margin: 0 0.75rem;">
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                Try asking about your tasks, schedule, or productivity stats.
+                <button @click="showNudge = false">
+                    <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
-            </form>
+            </div>
+        </template>
+
+        <div class="ai-fab-input">
+            <div class="ai-command-bar" style="margin: 0;">
+                <span class="ai-command-bar__glyph">&gt;</span>
+                <input
+                    type="text"
+                    x-model="input"
+                    @keydown.enter="!loading && sendMessage(input)"
+                    :disabled="loading"
+                    placeholder="Ask about your tasks..."
+                    class="ai-command-bar__input"
+                />
+                <template x-if="!loading">
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--ai-text-dim)" stroke-width="2" class="ai-command-bar__hint"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </template>
+                <template x-if="loading">
+                    <button class="ai-command-bar__stop" @click="stopGenerating()">
+                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+                        Stop
+                    </button>
+                </template>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-function floatingChat() {
+function fabChat() {
     return {
         open: false,
         loading: false,
+        fabLoading: false,
         input: '',
         messages: [],
+        activeSessionId: null,
+        reader: null,
+        showNudge: false,
+        offTopicAttempts: 0,
         suggestions: ['What should I prioritize?', 'Any overdue tasks?', 'Break down my biggest task'],
+        
+        async toggleFab() {
+            this.open = !this.open;
+            if (this.open) {
+                await this.openFab();
+            }
+        },
+
+        async openFab() {
+            if (this.activeSessionId) return;
+            this.fabLoading = true;
+            const stored = localStorage.getItem('active_ai_session_id');
+
+            if (stored) {
+                await this.loadSession(parseInt(stored));
+            } else {
+                try {
+                    const res = await fetch('/ai/sessions/active');
+                    const data = await res.json();
+                    if (data.session_id) {
+                        localStorage.setItem('active_ai_session_id', data.session_id);
+                        await this.loadSession(data.session_id);
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch active session:', e);
+                }
+            }
+            this.fabLoading = false;
+        },
+
+        async loadSession(id) {
+            this.activeSessionId = id;
+            this.loading = true;
+            this.messages = [];
+            try {
+                const res = await fetch(`/ai/sessions/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    this.messages = data.messages || [];
+                    if (data.context) {
+                        Alpine.store('aiContext').update(data.context);
+                    }
+                    this.scrollToBottom();
+                    
+                    const isGenerating = res.headers.get('X-Assistant-Generating') === '1';
+                    if (isGenerating) {
+                        this.pollSessionForAssistantReply(id);
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async pollSessionForAssistantReply(id, attempt = 1) {
+            if (attempt > 30 || this.activeSessionId !== id || !this.open) return;
+            setTimeout(async () => {
+                try {
+                    const res = await fetch(`/ai/sessions/${id}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const isGenerating = res.headers.get('X-Assistant-Generating') === '1';
+                        
+                        if ((data.messages?.length > this.messages.length) || !isGenerating) {
+                            this.messages = data.messages || [];
+                            if (data.context) {
+                                Alpine.store('aiContext').update(data.context);
+                            }
+                            this.scrollToBottom();
+                        }
+                        
+                        if (isGenerating && this.activeSessionId === id && this.open) {
+                            this.pollSessionForAssistantReply(id, attempt + 1);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to poll FAB session status:', e);
+                }
+            }, 2000);
+        },
+
         async sendMessage(text) {
             if (!text?.trim() || this.loading) return;
+            this.showNudge = false;
             const content = text.trim();
+
+            const offTopicKeywords = ['task', 'todo', 'overdue', 'schedule', 'priority', 'subject', 'streak', 'productivity', 'points', 'due', 'completion', 'organi'];
+            const isTaskRelated = offTopicKeywords.some(keyword => content.toLowerCase().includes(keyword));
+
+            if (!isTaskRelated) {
+                this.offTopicAttempts++;
+                if (this.offTopicAttempts >= 2) {
+                    this.showNudge = true;
+                    return;
+                }
+            } else {
+                this.offTopicAttempts = 0;
+            }
+
             this.input = '';
+            const msgIdx = this.messages.length;
             this.messages.push({ role: 'user', content });
             this.loading = true;
+            this.scrollToBottom();
+
             try {
-                const res = await fetch('/ai/chat', {
+                if (!this.activeSessionId) {
+                    const sessRes = await fetch('/ai/sessions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('[name=_token]')?.value ?? '',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ title: 'New Chat' })
+                    });
+                    if (sessRes.ok) {
+                        const newSess = await sessRes.json();
+                        this.activeSessionId = newSess.id;
+                        localStorage.setItem('active_ai_session_id', newSess.id);
+                    }
+                }
+
+                const csrfToken = document.querySelector('[name=_token]')?.value ?? '';
+                const response = await fetch('/ai/chat/stream', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('[name=_token]')?.value ?? '',
-                        'Accept': 'application/json'
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'text/event-stream'
                     },
-                    body: JSON.stringify({ messages: this.messages })
+                    body: JSON.stringify({
+                        session_id: this.activeSessionId,
+                        message: content
+                    })
                 });
-                if (!res.ok) {
-                    const text = await res.text();
-                    try { const json = JSON.parse(text); throw new Error(json.error || json.message || 'Request failed'); }
-                    catch (e) { if (e.message !== 'Request failed') throw e; throw new Error(text.substring(0, 100)); }
+
+                if (!response.ok) {
+                    const errorMsg = await response.text();
+                    throw new Error(errorMsg || 'Failed to stream response');
                 }
-                const data = await res.json();
-                this.messages.push({ role: 'assistant', content: data.reply });
+
+                const newSessionId = response.headers.get('X-Session-Id');
+                const aiContextHeader = response.headers.get('X-Ai-Context');
+                if (aiContextHeader) {
+                    try {
+                        Alpine.store('aiContext').update(JSON.parse(aiContextHeader));
+                    } catch (e) {}
+                }
+                if (newSessionId) {
+                    this.activeSessionId = parseInt(newSessionId);
+                    localStorage.setItem('active_ai_session_id', this.activeSessionId);
+                }
+
+                this.messages.push({ role: 'assistant', content: '', displayContent: '', subtasks: null, parentTaskTitle: null });
+
+                this.reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await this.reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    const msg = this.messages[msgIdx + 1];
+                    msg.content += chunk;
+
+                    const fenceMatch = msg.content.match(/```subtasks/);
+                    if (fenceMatch) {
+                        msg.displayContent = msg.content.slice(0, fenceMatch.index).trim();
+                    } else {
+                        msg.displayContent = msg.content;
+                    }
+                    this.scrollToBottom();
+                }
+
+                // Fetch parsed version on completion
+                try {
+                    const latestRes = await fetch(`/ai/sessions/${this.activeSessionId}/messages/latest`);
+                    const lastMsg = this.messages[msgIdx + 1];
+                    if (latestRes.ok) {
+                        const latest = await latestRes.json();
+                        if (lastMsg) {
+                            lastMsg.displayContent = latest.displayContent || latest.content;
+                            lastMsg.subtasks = latest.subtasks || null;
+                            lastMsg.parentTaskTitle = latest.parentTaskTitle || null;
+                            lastMsg.id = latest.id;
+                        }
+                    } else if (lastMsg && !lastMsg.content.trim()) {
+                        lastMsg.displayContent = 'I couldn\'t generate a response. Please try rephrasing your question.';
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch parsed FAB message:', e);
+                }
             } catch (e) {
-                this.messages.push({ role: 'assistant', content: 'Sorry, something went wrong: ' + e.message });
+                if (e.name === 'AbortError' || e.message.includes('cancel')) {
+                    console.log('FAB Stream aborted.');
+                    const placeholder = this.messages[msgIdx + 1];
+                    if (placeholder && !placeholder.content) {
+                        placeholder.content = 'Response generation was stopped.';
+                        placeholder.displayContent = 'Response generation was stopped.';
+                    }
+                } else {
+                    this.messages[msgIdx + 1] = {
+                        role: 'assistant',
+                        content: 'Sorry, something went wrong: ' + e.message,
+                        displayContent: 'Sorry, something went wrong: ' + e.message,
+                        isError: true,
+                        failedPrompt: content
+                    };
+                }
             } finally {
                 this.loading = false;
-                this.$nextTick(() => {
-                    const el = this.$refs.fabMessages;
-                    if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
-                });
+                this.reader = null;
+                this.scrollToBottom();
             }
+        },
+
+        stopGenerating() {
+            if (this.reader) {
+                this.reader.cancel();
+                this.loading = false;
+                this.reader = null;
+            }
+        },
+
+        retryMessage(prompt, index) {
+            this.messages.splice(index, 1);
+            this.sendMessage(prompt);
+        },
+
+        renderMarkdown(content) {
+            if (!content) return '';
+            const html = marked.parse(content, { breaks: true });
+            return DOMPurify.sanitize(html);
+        },
+
+        scrollToBottom() {
+            this.$nextTick(() => {
+                const el = this.$refs.fabMessages;
+                if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+            });
         }
     };
 }

@@ -105,6 +105,11 @@
         </div>
         @endforeach
     </div>
+    @if ($notes->hasPages())
+    <div style="margin-top: 1.5rem;">
+        {{ $notes->links() }}
+    </div>
+    @endif
     @endif
 </div>
 
@@ -158,7 +163,7 @@
 <script>
 let quill = null;
 let currentNoteId = null;
-const notesData = @json($notes);
+const notesData = @json($notes->items());
 
 function initQuill() {
     if (quill) return;

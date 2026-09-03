@@ -14,10 +14,7 @@ class CategoryFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'name'    => fake()->unique()->randomElement([
-                'Homework', 'Quiz', 'Project', 'Exam',
-                'Assignment', 'Lab Report', 'Reading', 'Research',
-            ]),
+            'name'    => fake()->unique()->word() . ' ' . fake()->unique()->randomNumber(5, false),
         ];
     }
 }

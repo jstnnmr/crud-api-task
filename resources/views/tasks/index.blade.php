@@ -325,6 +325,11 @@
             </tbody>
         </table>
         </div>
+        @if ($tasks->hasPages())
+        <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--border);">
+            {{ $tasks->appends(request()->query())->links() }}
+        </div>
+        @endif
     </div>
     @endif
 </div>

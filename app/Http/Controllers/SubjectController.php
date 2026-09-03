@@ -20,9 +20,10 @@ class SubjectController extends Controller
 
     public function index(Request $request): JsonResponse|View
     {
-        $result = $this->subjectService->getAll(userId: auth()->id());
+        $perPage = (int) $request->query('per_page', 5);
+        $result = $this->subjectService->getAll(userId: auth()->id(), perPage: $perPage);
 
-        if ($request->wantsJson()) {
+        if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json(['success' => true, 'data' => $result->data]);
         }
 
@@ -93,12 +94,11 @@ class SubjectController extends Controller
         return redirect()->route('subjects.data')->with('success', 'Subject updated!');
     }
 
-    public function data(): View
+    public function data(Request $request): View
     {
-        $subjects = Subject::where('user_id', auth()->id())
-            ->with(['tasks.category'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $perPage = (int) $request->query('per_page', 5);
+        $result = $this->subjectService->getAll(userId: auth()->id(), perPage: $perPage);
+        $subjects = $result->data;
 
         $categories = auth()->user()->categories()->orderBy('name')->get();
 

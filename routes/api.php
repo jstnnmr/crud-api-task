@@ -28,7 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('account', [AccountController::class, 'updateProfile']);
     Route::put('account/password', [AccountController::class, 'updatePassword']);
     Route::post('account/password/confirm', [AccountController::class, 'confirmPasswordChange']);
-    Route::post('account/photo', [AccountController::class, 'updatePhoto']);
+    Route::post('account/photo', [AccountController::class, 'updatePhoto']);    
 
     // Notes
     Route::get('notes', [NoteController::class, 'list']);
@@ -54,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Categories
     Route::apiResource('categories', CategoryController::class)->names('api.categories');
+
 
     // Tasks
     Route::apiResource('tasks', TaskController::class)->names('api.tasks');

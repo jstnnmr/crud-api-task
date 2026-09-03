@@ -18,9 +18,18 @@ class TaskController extends Controller
 
     public function index(Request $request): JsonResponse|RedirectResponse
     {
-        $result = $this->taskService->getAll(userId: auth()->id());
+        $status = $request->query('status');
+        $sort = $request->query('sort');
+        $perPage = (int) $request->query('per_page', 10);
 
-        if ($request->wantsJson()) {
+        $result = $this->taskService->getAll(
+            userId: auth()->id(),
+            status: $status,
+            sort: $sort,
+            perPage: $perPage
+        );
+
+        if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json(['success' => true, 'data' => $result->data]);
         }
 
@@ -52,7 +61,7 @@ class TaskController extends Controller
             'title'         => 'required|string|max:255',
             'description'   => 'nullable|string',
             'priority'      => 'required|in:low,medium,high',
-            'status'        => 'required|in:pending,in_progress,completed',
+            'status'        => 'sometimes|in:pending,in_progress,completed',
             'due_date'      => 'nullable|date',
             'invited_email' => 'nullable|email|max:255',
         ]);

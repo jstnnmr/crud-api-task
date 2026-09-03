@@ -440,6 +440,12 @@
     </div>
     @endforelse
 
+    @if ($subjects->hasPages())
+    <div style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+        {{ $subjects->links() }}
+    </div>
+    @endif
+
     <div class="lace">✦ · · · ✦ · · · ✦ · · · ✦</div>
 
 </div>

@@ -16,7 +16,8 @@ class CategoryController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $result = $this->categoryService->getAll(userId: auth()->id());
+        $perPage = (int) $request->query('per_page', 10);
+        $result = $this->categoryService->getAllPaginated(userId: auth()->id(), perPage: $perPage);
         return response()->json(['success' => true, 'data' => $result->data]);
     }
 

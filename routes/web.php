@@ -58,6 +58,15 @@ Route::middleware('auth')->group(function () {
     // AI Assistant
     Route::get('/ai', [AiAssistantController::class, 'index']);
     Route::post('/ai/chat', [AiAssistantController::class, 'chat'])->middleware('throttle:30,1');
+    Route::post('/ai/chat/stream', [AiAssistantController::class, 'stream'])->middleware('throttle:30,1');
+    Route::get('/ai/sessions', [AiAssistantController::class, 'sessions']);
+    Route::get('/ai/sessions/active', [AiAssistantController::class, 'activeSession']);
+    Route::get('/ai/sessions/{session}/messages/latest', [AiAssistantController::class, 'latestMessage']);
+    Route::get('/ai/sessions/{session}', [AiAssistantController::class, 'showSession']);
+    Route::post('/ai/sessions', [AiAssistantController::class, 'createSession']);
+    Route::delete('/ai/sessions/{session}', [AiAssistantController::class, 'deleteSession']);
+    Route::post('/ai/sessions/{session}/fork', [AiAssistantController::class, 'forkSession']);
+    Route::post('/ai/subtasks/accept', [AiAssistantController::class, 'acceptSubtasks'])->middleware('throttle:30,1');
 
     // Notes
     Route::get('/notes', [NoteController::class, 'index']);

@@ -282,3 +282,38 @@ Provide the following:
 - Form Request validation
 - Postman collection or API documentation
 - README with setup instructions
+
+---
+
+# Database Seeding & Test Accounts Guide
+
+The database can be fully seeded with a rich, volumetric dataset designed to test pagination, filtering, and collaborative features.
+
+### Seeding Command
+Run the following command to reset the database and seed it with the test dataset:
+```bash
+php artisan migrate:fresh --seed
+```
+
+### Seeded User Accounts
+All seeded accounts use the default password: `password`
+
+| Name | Email | Role / Purpose |
+|------|-------|----------------|
+| **Test User** | `test@example.com` | Primary test account |
+| **Jane Doe** | `collab1@example.com` | Collaborator user 1 |
+| **John Smith** | `collab2@example.com` | Collaborator user 2 |
+| **Alice Johnson** | `collab3@example.com` | Collaborator user 3 |
+
+### Generated Dataset Volume
+Seeding generates the following records to facilitate comprehensive testing of lists and pagination:
+
+*   **Subjects**: 6 subjects with unique name and color values assigned to the primary user.
+*   **Categories**: 10 categories (Homework, Quiz, Project, etc.) assigned to the primary user.
+*   **Tasks**: 35 owned tasks for the primary user with randomized priorities (`low`, `medium`, `high`), statuses (`pending`, `in_progress`, `completed`), and due dates to test pagination (4 pages at 10 per page), sorting, and filtering.
+*   **Notes**: 18 personal notes for the primary user (3 pages at 6 per page).
+*   **Collaborative Tasks**: 12 shared tasks (6 owned by primary user with collaborators attached, 6 owned by collaborators with primary user attached).
+*   **Collaborative Notes**: 10 shared notes (5 owned by primary user, 5 owned by collaborators).
+*   **Task Invitations**: 6 invitations (3 pending, 3 accepted).
+*   **Task Activity Logs**: 25 logged activities across collaborative tasks to populate team logs.
+
